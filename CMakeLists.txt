@@ -10,6 +10,8 @@ add_library(pe STATIC
 target_include_directories(pe PRIVATE include)
 
 
+add_subdirectory(examples)
+
 add_executable(pe_test test.cpp)
 target_include_directories(pe_test PRIVATE include)
 target_link_libraries(pe_test pe)

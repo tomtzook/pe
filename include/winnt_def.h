@@ -204,8 +204,8 @@ struct ImageOptionalHeaders32 {
     uint32_t SizeOfImage;
     uint32_t SizeOfHeaders;
     uint32_t CheckSum;			/* 0x40 */
-    uint16_t  Subsystem;
-    uint16_t  DllCharacteristics;
+    uint16_t Subsystem;
+    uint16_t DllCharacteristics;
     uint32_t SizeOfStackReserve;
     uint32_t SizeOfStackCommit;
     uint32_t SizeOfHeapReserve;		/* 0x50 */
