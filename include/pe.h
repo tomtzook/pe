@@ -33,6 +33,7 @@ public:
     const std::vector<Section>& sections() const;
     const Section& sectionByName(const char* name) const;
 
+    bool hasExportSection() const;
     const Export& exportSection() const;
 
 private:

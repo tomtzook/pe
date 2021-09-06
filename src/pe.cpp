@@ -74,6 +74,10 @@ const Section& Image::sectionByName(const char* name) const {
     throw NotFoundException(name);
 }
 
+bool Image::hasExportSection() const {
+    return m_export.has_value();
+}
+
 const Export& Image::exportSection() const {
     if (m_export.has_value()) {
         return m_export.value();

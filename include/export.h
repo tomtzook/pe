@@ -79,6 +79,8 @@ class Export {
 public:
     Export(const ImageExportDirectory* directory, const Section& section);
 
+    const char* imageName() const;
+
     export_ordinal_t toUnbaised(export_ordinal_t baisedOrdinal) const;
     rva_t operator[](export_ordinal_t ordinal) const;
 

@@ -109,6 +109,10 @@ Export::Export(const ImageExportDirectory* directory, const Section& section)
     , m_names(m_directory, m_section)
 {}
 
+const char* Export::imageName() const {
+    return m_section.rvaToPointer<char>(m_directory->Name);
+}
+
 export_ordinal_t Export::toUnbaised(export_ordinal_t baisedOrdinal) const {
     return baisedOrdinal - m_directory->OrdinalBase;
 }

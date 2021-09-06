@@ -17,6 +17,9 @@ std::ostream& operator<<(std::ostream& os, const pe::Image& image) {
         ", machine=" << image.machineType() <<
         ", subsystem=" << image.subsystem() <<
         std::endl;
+    if (image.hasExportSection()) {
+        os << "\tname=" << image.exportSection().imageName() << std::endl;
+    }
     os << "\tcharacteristics=" << image.characteristics() << std::endl;
     os << "\tDLL characteristics=" << image.dllCharacteristics();
 
@@ -116,7 +119,7 @@ std::ostream& operator<<(std::ostream& os, const pe::DllCharacteristics& ch) {
 }
 
 std::ostream& operator<<(std::ostream& os, const pe::ExportedNames::entry& entry) {
-    os << "name=" << entry.name()
+    os << "imageName=" << entry.name()
         << " unbaised=0x" << entry.ordinal()
         << " baised=0x" << entry.baisedOrdinal();
 
