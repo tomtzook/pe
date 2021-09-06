@@ -19,8 +19,9 @@ int main() {
 
     try {
         pe::Image image(buffer.data());
-        printf("IMAGE: size=0x%x, machine=0x%x, subsystem=0x%x\n",
-               image.size(), image.machineType(), image.subsystem());
+        printf("IMAGE: size=0x%zx, machine=0x%x, characteristics=0x%x, subsystem=0x%x, DLLcharacteristics=0x%x\n",
+               image.size(), image.machineType(), image.characteristics().data, image.subsystem(),
+               image.dllCharacteristics().data);
 
         for (auto& section : image.sections()) {
             printf("Section: %s\n", section.name());

@@ -26,8 +26,16 @@ MachineType Image::machineType() const {
     return static_cast<MachineType>(m_ntHeaders->FileHeader.Machine);
 }
 
+Characteristics Image::characteristics() const {
+    return Characteristics {.data = m_ntHeaders->FileHeader.Characteristics};
+}
+
 Subsystem Image::subsystem() const {
     return static_cast<Subsystem>(m_ntHeaders->OptionalHeader.Subsystem);
+}
+
+DllCharacteristics Image::dllCharacteristics() const {
+    return DllCharacteristics {.data = m_ntHeaders->OptionalHeader.DllCharacteristics};
 }
 
 size_t Image::sectionsCount() const {
@@ -84,6 +92,12 @@ void Image::checkValidHeaders() {
     }
     if (IMAGE_NT_OPTIONAL_HDR64_MAGIC != m_ntHeaders->OptionalHeader.Magic) {
         throw BadHeaderException(BadHeaderException::ProblemReason::OPTIONAL_HEADER_MAGIC);
+    }
+
+    Characteristics ch = characteristics();
+    if (ch.bits.LineNumsStripped || ch.bits.LocalSymsStripped || ch.bits.AggressiveWsTrim ||
+        ch.bits.BytesReversedLo || ch.bits.BytesReversedHi) {
+        throw BadHeaderException(BadHeaderException::ProblemReason::USE_OF_DEPRECATED_CHARACTERISTIC);
     }
 }
 

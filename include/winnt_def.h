@@ -75,6 +75,29 @@ enum MachineType {
     MACHINE_ARM64 = 0x01c5
 };
 
+union Characteristics {
+    uint16_t data;
+    struct {
+        uint16_t RelocsStripped : 1;
+        uint16_t ExecutableImage : 1;
+        uint16_t LineNumsStripped : 1;
+        uint16_t LocalSymsStripped : 1;
+        uint16_t AggressiveWsTrim : 1;
+        uint16_t LargeAddressAware : 1;
+        uint16_t reserved0 : 1;
+        uint16_t BytesReversedLo : 1;
+        uint16_t bit32Machine : 1;
+        uint16_t DebugStripped : 1;
+        uint16_t RemovableRunFromSwap : 1;
+        uint16_t NetRunFromSwap : 1;
+        uint16_t FileSystem : 1;
+        uint16_t Dll : 1;
+        uint16_t UpSystemOnly : 1;
+        uint16_t BytesReversedHi : 1;
+    } bits;
+};
+static_assert(sizeof(Characteristics) == sizeof(uint16_t), "sizeof(Characteristics)");
+
 struct ImageFileHeader {
     uint16_t Machine;
     uint16_t NumberOfSections;
@@ -129,20 +152,21 @@ enum Subsystem {
 };
 
 union DllCharacteristics {
+    uint16_t data;
     struct {
-        uint16_t reserved0 : 6;
+        uint16_t reserved0 : 5;
+        uint16_t HighEntropyVa : 1;
         uint16_t DynamicBase : 1;
         uint16_t ForceIntegrity : 1;
         uint16_t NxCompat : 1;
         uint16_t NoIsolation : 1;
         uint16_t NoSeh : 1;
         uint16_t NoBind : 1;
-        uint16_t reserved1 : 1;
+        uint16_t AppContainer : 1;
         uint16_t WdmDriver : 1;
-        uint16_t reserved2 : 1;
+        uint16_t GuardCf : 1;
         uint16_t TerminalServerAware : 1;
     } bits;
-    uint16_t data;
 };
 static_assert(sizeof(DllCharacteristics) == sizeof(uint16_t), "sizeof(DLL Characteristics)");
 

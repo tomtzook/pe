@@ -16,7 +16,9 @@ public:
 
     size_t size() const;
     MachineType machineType() const;
+    Characteristics characteristics() const;
     Subsystem subsystem() const;
+    DllCharacteristics dllCharacteristics() const;
     size_t sectionsCount() const;
 
     size_t rvaToOffset(rva_t rva) const;

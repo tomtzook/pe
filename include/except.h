@@ -14,7 +14,8 @@ public:
     enum class ProblemReason {
         DOS_MAGIC,
         NT_SIGNATURE,
-        OPTIONAL_HEADER_MAGIC
+        OPTIONAL_HEADER_MAGIC,
+        USE_OF_DEPRECATED_CHARACTERISTIC,
     };
 
     explicit BadHeaderException(ProblemReason reason)
