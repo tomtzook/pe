@@ -28,10 +28,19 @@ int main() {
 
         {
             auto peExport = image.exportSection();
-            pe::rva_t rva = peExport.findExportByName("ExAllocatePoolWithTag");
+            /*pe::rva_t rva = peExport.findExportByName("ExAllocatePoolWithTag");
+            auto ptr = image.rvaToPointer<uint8_t>(rva);
+            printf("Found: 0x%x\n", ptr);*/
+
+            auto entry = peExport.names()["ExAllocatePoolWithTag"];
+            pe::rva_t rva = peExport[entry.unbaised_ordinal()];
             auto ptr = image.rvaToPointer<uint8_t>(rva);
 
-            printf("Found: 0x%x\n", ptr);
+            std::cout << entry << " ptr=" << reinterpret_cast<const void*>(ptr) << std::endl;
+
+            /*for (const auto& entry : peExport.names()) {
+                printf("f=%s, s=%d\n", entry.first, entry.second);
+            }*/
         }
 
     } catch (const pe::BadHeaderException& ex) {
