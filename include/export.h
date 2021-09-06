@@ -61,7 +61,7 @@ public:
         const export_ordinal_t* m_ordinalTablePtr;
     };
 
-    ExportedNames(const ImageExportDirectory* directory, const Section& section);
+    ExportedNames(const ImageExportDirectory* directory, Section section);
 
     size_t count() const;
 
@@ -72,12 +72,12 @@ public:
 
 private:
     const ImageExportDirectory* m_directory;
-    const Section& m_section;
+    Section m_section;
 };
 
 class Export {
 public:
-    Export(const ImageExportDirectory* directory, const Section& section);
+    Export(const ImageExportDirectory* directory, Section section);
 
     const char* imageName() const;
 
@@ -88,7 +88,7 @@ public:
 
 private:
     const ImageExportDirectory* m_directory;
-    const Section& m_section;
+    Section m_section;
 
     const ExportedNames m_names;
 };

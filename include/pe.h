@@ -9,6 +9,48 @@
 
 namespace pe {
 
+class ImageSections {
+public:
+    class iterator {
+    public:
+        using value_type = Section;
+        using reference = Section;
+        using pointer = Section;
+        using iterator_category = std::bidirectional_iterator_tag;
+
+        iterator(const uint8_t* imageBase, const ImageNtHeaders64* ntHeaders,
+                 const ImageSectionHeader* header);
+
+        iterator& operator++();
+        iterator& operator--();
+
+        reference operator*();
+        pointer operator->();
+
+        bool operator==(const iterator& rhs);
+        bool operator!=(const iterator& rhs);
+
+    private:
+        const uint8_t* m_imageBase;
+        const ImageNtHeaders64* m_ntHeaders;
+        const ImageSectionHeader* m_sectionHeader;
+    };
+
+    ImageSections(const uint8_t* imageBase, const ImageNtHeaders64* ntHeaders);
+
+    size_t count() const;
+
+    Section operator[](const char* name) const;
+
+    iterator begin() const;
+    iterator end() const;
+
+private:
+    const uint8_t* m_imageBase;
+    const ImageNtHeaders64* m_ntHeaders;
+    const ImageSectionHeader* m_sectionHeaders;
+};
+
 class Image {
 public:
     explicit Image(const void* peBuffer);
@@ -30,8 +72,7 @@ public:
 
     const ImageDataDirectory* dataDirectory(DataDirectoryType type) const;
 
-    const std::vector<Section>& sections() const;
-    const Section& sectionByName(const char* name) const;
+    const ImageSections& sections() const;
 
     bool hasExportSection() const;
     const Export& exportSection() const;
@@ -46,7 +87,7 @@ private:
     const ImageDosHeader* m_dosHeader;
     const ImageNtHeaders64* m_ntHeaders;
 
-    std::vector<Section> m_sections;
+    const ImageSections m_sections;
     std::optional<Export> m_export;
 };
 

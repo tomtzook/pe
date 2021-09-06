@@ -69,7 +69,7 @@ bool ExportedNames::iterator::operator!=(const iterator& rhs) {
     return m_namePointerPtr != rhs.m_namePointerPtr;
 }
 
-ExportedNames::ExportedNames(const ImageExportDirectory* directory, const Section& section)
+ExportedNames::ExportedNames(const ImageExportDirectory* directory, Section section)
         : m_directory(directory)
         , m_section(section)
 {}
@@ -103,7 +103,7 @@ ExportedNames::entry ExportedNames::operator[](name_type name) const {
     throw NotFoundException(name);
 }
 
-Export::Export(const ImageExportDirectory* directory, const Section& section)
+Export::Export(const ImageExportDirectory* directory, Section section)
     : m_directory(directory)
     , m_section(section)
     , m_names(m_directory, m_section)

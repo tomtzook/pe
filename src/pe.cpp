@@ -6,10 +6,70 @@
 
 namespace pe {
 
+ImageSections::iterator::iterator(const uint8_t* imageBase, const ImageNtHeaders64* ntHeaders,
+         const ImageSectionHeader* header)
+    : m_imageBase(imageBase)
+    , m_ntHeaders(ntHeaders)
+    , m_sectionHeader(header)
+{}
+
+ImageSections::iterator& ImageSections::iterator::operator++() {
+    m_sectionHeader++;
+    return *this;
+}
+ImageSections::iterator& ImageSections::iterator::operator--() {
+    m_sectionHeader--;
+    return *this;
+}
+
+ImageSections::iterator::reference ImageSections::iterator::operator*() {
+    return {m_imageBase, m_ntHeaders, m_sectionHeader};
+}
+ImageSections::iterator::pointer ImageSections::iterator::operator->() {
+    return {m_imageBase, m_ntHeaders, m_sectionHeader};
+}
+
+bool ImageSections::iterator::operator==(const iterator& rhs) {
+    return m_sectionHeader == rhs.m_sectionHeader;
+}
+bool ImageSections::iterator::operator!=(const iterator& rhs) {
+    return m_sectionHeader != rhs.m_sectionHeader;
+}
+
+ImageSections::ImageSections(const uint8_t* imageBase, const ImageNtHeaders64* ntHeaders)
+    : m_imageBase(imageBase)
+    , m_ntHeaders(ntHeaders)
+    , m_sectionHeaders(reinterpret_cast<const ImageSectionHeader*>(
+                               reinterpret_cast<const uint8_t*>(&m_ntHeaders->OptionalHeader)
+                               + m_ntHeaders->FileHeader.SizeOfOptionalHeader))
+{}
+
+size_t ImageSections::count() const {
+    return m_ntHeaders->FileHeader.NumberOfSections;
+}
+
+Section ImageSections::operator[](const char* name) const {
+    for(const auto& section : *this) {
+        if (0 == strcmp(name, section.name())) {
+            return section;
+        }
+    }
+
+    throw NotFoundException(name);
+}
+
+ImageSections::iterator ImageSections::begin() const {
+    return iterator(m_imageBase, m_ntHeaders, m_sectionHeaders);
+}
+ImageSections::iterator ImageSections::end() const {
+    return iterator(m_imageBase, m_ntHeaders, m_sectionHeaders + count());
+}
+
 Image::Image(const void* peBuffer)
     : m_buffer(reinterpret_cast<const uint8_t*>(peBuffer))
     , m_dosHeader(reinterpret_cast<const ImageDosHeader*>(peBuffer))
-    , m_ntHeaders(reinterpret_cast<const ImageNtHeaders64*>(m_buffer + m_dosHeader->e_lfanew)) {
+    , m_ntHeaders(reinterpret_cast<const ImageNtHeaders64*>(m_buffer + m_dosHeader->e_lfanew))
+    , m_sections(m_buffer, m_ntHeaders) {
     checkValidHeaders();
     loadSections();
 }
@@ -43,7 +103,7 @@ size_t Image::sectionsCount() const {
 }
 
 size_t Image::rvaToOffset(rva_t rva) const {
-    for (auto& section : sections()) {
+    for (const auto& section : sections()) {
         if (section.containsRva(rva)) {
             return section.rvaToOffset(rva);
         }
@@ -60,18 +120,8 @@ const ImageDataDirectory* Image::dataDirectory(DataDirectoryType type) const {
     return m_ntHeaders->OptionalHeader.DataDirectory + type;
 }
 
-const std::vector<Section>& Image::sections() const {
+const ImageSections& Image::sections() const {
     return m_sections;
-}
-
-const Section& Image::sectionByName(const char* name) const {
-    for (auto& section : sections()) {
-        if (0 == strcmp(name, section.name())) {
-            return section;
-        }
-    }
-
-    throw NotFoundException(name);
 }
 
 bool Image::hasExportSection() const {
@@ -106,14 +156,9 @@ void Image::checkValidHeaders() {
 }
 
 void Image::loadSections() {
-    const ImageSectionHeader* sectionHeaders = getSectionHeaders();
-    for (size_t i = 0; i < sectionsCount(); i++) {
-        m_sections.emplace_back(m_buffer, m_ntHeaders, &sectionHeaders[i]);
-    }
-
     // load export
     try {
-        const Section& section = sectionByName(".edata");
+        auto section = m_sections[".edata"];
         auto exportDataDirectory = dataDirectory(IMAGE_DIRECTORY_ENTRY_EXPORT);
         auto exportDirectory = rvaToPointer<ImageExportDirectory>(exportDataDirectory->VirtualAddress);
 

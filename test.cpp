@@ -22,7 +22,7 @@ int main() {
         pe::Image image(buffer.data());
         std::cout << image << std::endl;
 
-        for (auto& section : image.sections()) {
+        for (const auto& section : image.sections()) {
             printf("Section: %s\n", section.name());
         }
 

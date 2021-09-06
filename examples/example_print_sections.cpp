@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
 
     pe::Image image(buffer.data());
 
-    for (auto& section : image.sections()) {
+    for (const auto& section : image.sections()) {
         printf("Section: %s\n", section.name());
     }
 
