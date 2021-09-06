@@ -27,9 +27,9 @@ int main() {
         }
 
         {
-            auto peExport = image.exportSection();
-            auto entry = peExport.names()["ExAllocatePoolWithTag"];
-            pe::rva_t rva = peExport[entry.ordinal()];
+            auto exportTable = image.exportTable();
+            auto entry = exportTable.names()["ExAllocatePoolWithTag"];
+            pe::rva_t rva = exportTable[entry.ordinal()];
             auto ptr = image.rvaToPointer<uint8_t>(rva);
 
             std::cout << entry << " ptr=" << reinterpret_cast<const void*>(ptr) << std::endl;

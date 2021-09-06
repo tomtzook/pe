@@ -7,7 +7,7 @@
 
 namespace pe {
 
-class ExportedNames {
+class ExportedNamesTable {
 public:
     using name_type = const char*;
     using ordinal_type = export_ordinal_t;
@@ -61,7 +61,7 @@ public:
         const export_ordinal_t* m_ordinalTablePtr;
     };
 
-    ExportedNames(const ImageExportDirectory* directory, Section section);
+    ExportedNamesTable(const ImageExportDirectory* directory, Section section);
 
     size_t count() const;
 
@@ -75,22 +75,22 @@ private:
     Section m_section;
 };
 
-class Export {
+class ExportTable {
 public:
-    Export(const ImageExportDirectory* directory, Section section);
+    ExportTable(const ImageExportDirectory* directory, Section section);
 
     const char* imageName() const;
 
     export_ordinal_t toUnbaised(export_ordinal_t baisedOrdinal) const;
     rva_t operator[](export_ordinal_t ordinal) const;
 
-    const ExportedNames& names() const;
+    const ExportedNamesTable& names() const;
 
 private:
     const ImageExportDirectory* m_directory;
     Section m_section;
 
-    const ExportedNames m_names;
+    ExportedNamesTable m_namesTable;
 };
 
 }

@@ -25,8 +25,8 @@ std::ostream& operator<<(std::ostream& os, const pe::PeHeaders& headers) {
 
 std::ostream& operator<<(std::ostream& os, const pe::Image& image) {
     os << image.headers();
-    if (image.hasExportSection()) {
-        os << std::endl << "\tname=" << image.exportSection().imageName();
+    if (image.hasExportTable()) {
+        os << std::endl << "\tname=" << image.exportTable().imageName();
     }
 
     return os;
@@ -129,7 +129,7 @@ std::ostream& operator<<(std::ostream& os, const pe::Section& section) {
     return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const pe::ExportedNames::entry& entry) {
+std::ostream& operator<<(std::ostream& os, const pe::ExportedNamesTable::entry& entry) {
     os << "name=" << entry.name()
         << " unbaised=0x" << entry.ordinal()
         << " baised=0x" << entry.baisedOrdinal();

@@ -25,10 +25,10 @@ int main(int argc, char** argv) {
 
     pe::Image image(buffer.data());
 
-    auto peExport = image.exportSection();
+    auto exportTable = image.exportTable();
 
-    auto entry = peExport.names()[exportName];
-    pe::rva_t rva = peExport[entry.ordinal()];
+    auto entry = exportTable.names()[exportName];
+    pe::rva_t rva = exportTable[entry.ordinal()];
 
     size_t offset = image.rvaToOffset(rva);
     auto ptr = image.rvaToPointer<void>(rva);

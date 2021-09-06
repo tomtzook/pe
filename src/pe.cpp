@@ -30,13 +30,13 @@ const ImageSections& Image::sections() const {
     return m_sections;
 }
 
-bool Image::hasExportSection() const {
-    return m_export.has_value();
+bool Image::hasExportTable() const {
+    return m_exportTable.has_value();
 }
 
-const Export& Image::exportSection() const {
-    if (m_export.has_value()) {
-        return m_export.value();
+const ExportTable& Image::exportTable() const {
+    if (m_exportTable.has_value()) {
+        return m_exportTable.value();
     }
 
     throw NotFoundException(".edata");
@@ -49,7 +49,7 @@ void Image::loadSections() {
         auto exportDataDirectory = m_headers.dataDirectory(IMAGE_DIRECTORY_ENTRY_EXPORT);
         auto exportDirectory = rvaToPointer<ImageExportDirectory>(exportDataDirectory->VirtualAddress);
 
-        m_export.emplace(Export(exportDirectory, section));
+        m_exportTable.emplace(ExportTable(exportDirectory, section));
     } catch (const NotFoundException& ex) {}
 }
 

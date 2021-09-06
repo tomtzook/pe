@@ -24,8 +24,8 @@ public:
         return reinterpret_cast<const T*>(m_headers.base() + offset);
     }
 
-    bool hasExportSection() const;
-    const Export& exportSection() const;
+    bool hasExportTable() const;
+    const ExportTable& exportTable() const;
 
 private:
     void loadSections();
@@ -33,7 +33,7 @@ private:
     PeHeaders m_headers;
 
     const ImageSections m_sections;
-    std::optional<Export> m_export;
+    std::optional<ExportTable> m_exportTable;
 };
 
 }
