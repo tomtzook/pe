@@ -12,16 +12,22 @@
     }
 
 
+std::ostream& operator<<(std::ostream& os, const pe::PeHeaders& headers) {
+    os << "IMAGE size=0x" << std::hex << headers.size() <<
+       ", machine=" << headers.machineType() <<
+       ", subsystem=" << headers.subsystem() <<
+       std::endl;
+    os << "\tcharacteristics=" << headers.characteristics() << std::endl;
+    os << "\tDLL characteristics=" << headers.dllCharacteristics();
+
+    return os;
+}
+
 std::ostream& operator<<(std::ostream& os, const pe::Image& image) {
-    os << "IMAGE size=0x" << std::hex << image.size() <<
-        ", machine=" << image.machineType() <<
-        ", subsystem=" << image.subsystem() <<
-        std::endl;
+    os << image.headers();
     if (image.hasExportSection()) {
-        os << "\tname=" << image.exportSection().imageName() << std::endl;
+        os << std::endl << "\tname=" << image.exportSection().imageName();
     }
-    os << "\tcharacteristics=" << image.characteristics() << std::endl;
-    os << "\tDLL characteristics=" << image.dllCharacteristics();
 
     return os;
 }

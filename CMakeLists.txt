@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 add_library(pe STATIC
         src/pe.cpp
         src/section.cpp
-        src/export.cpp src/debug.cpp)
+        src/export.cpp src/debug.cpp src/pe_base.cpp)
 target_include_directories(pe PRIVATE include)
 
 

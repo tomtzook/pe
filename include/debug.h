@@ -7,6 +7,7 @@
 #include "export.h"
 
 
+std::ostream& operator<<(std::ostream& os, const pe::PeHeaders& headers);
 std::ostream& operator<<(std::ostream& os, const pe::Image& image);
 std::ostream& operator<<(std::ostream& os, const pe::MachineType& type);
 std::ostream& operator<<(std::ostream& os, const pe::Characteristics& ch);
