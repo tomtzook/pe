@@ -6,6 +6,7 @@
 
 #include "pe.h"
 #include "except.h"
+#include "debug.h"
 
 
 int main() {
@@ -19,9 +20,7 @@ int main() {
 
     try {
         pe::Image image(buffer.data());
-        printf("IMAGE: size=0x%zx, machine=0x%x, characteristics=0x%x, subsystem=0x%x, DLLcharacteristics=0x%x\n",
-               image.size(), image.machineType(), image.characteristics().data, image.subsystem(),
-               image.dllCharacteristics().data);
+        std::cout << image << std::endl;
 
         for (auto& section : image.sections()) {
             printf("Section: %s\n", section.name());
