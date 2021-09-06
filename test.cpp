@@ -23,7 +23,7 @@ int main() {
         std::cout << image << std::endl;
 
         for (const auto& section : image.sections()) {
-            printf("Section: %s\n", section.name());
+            std::cout << section << std::endl;
         }
 
         {

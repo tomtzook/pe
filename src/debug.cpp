@@ -124,8 +124,13 @@ std::ostream& operator<<(std::ostream& os, const pe::DllCharacteristics& ch) {
     return os;
 }
 
+std::ostream& operator<<(std::ostream& os, const pe::Section& section) {
+    os << "SECTION name=" << section.name() << ", size=0x" << std::hex << section.alignedVirtualSize();
+    return os;
+}
+
 std::ostream& operator<<(std::ostream& os, const pe::ExportedNames::entry& entry) {
-    os << "imageName=" << entry.name()
+    os << "name=" << entry.name()
         << " unbaised=0x" << entry.ordinal()
         << " baised=0x" << entry.baisedOrdinal();
 
