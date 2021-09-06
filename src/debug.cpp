@@ -117,8 +117,8 @@ std::ostream& operator<<(std::ostream& os, const pe::DllCharacteristics& ch) {
 
 std::ostream& operator<<(std::ostream& os, const pe::ExportedNames::entry& entry) {
     os << "name=" << entry.name()
-        << " unbaised=0x" << entry.unbaised_ordinal()
-        << " baised=0x" << entry.baised_ordinal();
+        << " unbaised=0x" << entry.ordinal()
+        << " baised=0x" << entry.baisedOrdinal();
 
     return os;
 }

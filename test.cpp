@@ -33,7 +33,7 @@ int main() {
             printf("Found: 0x%x\n", ptr);*/
 
             auto entry = peExport.names()["ExAllocatePoolWithTag"];
-            pe::rva_t rva = peExport[entry.unbaised_ordinal()];
+            pe::rva_t rva = peExport[entry.ordinal()];
             auto ptr = image.rvaToPointer<uint8_t>(rva);
 
             std::cout << entry << " ptr=" << reinterpret_cast<const void*>(ptr) << std::endl;
