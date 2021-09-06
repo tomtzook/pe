@@ -82,6 +82,9 @@ void Image::checkValidHeaders() {
     if (IMAGE_NT_SIGNATURE != m_ntHeaders->Signature) {
         throw BadHeaderException(BadHeaderException::ProblemReason::NT_SIGNATURE);
     }
+    if (IMAGE_NT_OPTIONAL_HDR64_MAGIC != m_ntHeaders->OptionalHeader.Magic) {
+        throw BadHeaderException(BadHeaderException::ProblemReason::OPTIONAL_HEADER_MAGIC);
+    }
 }
 
 void Image::loadSections() {

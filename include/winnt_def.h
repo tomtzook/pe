@@ -8,6 +8,10 @@ namespace pe {
 constexpr uint16_t IMAGE_DOS_SIGNATURE = 0x5A4D; /* MZ */
 constexpr uint32_t IMAGE_NT_SIGNATURE = 0x4550; /* PE */
 
+constexpr uint32_t IMAGE_NT_OPTIONAL_HDR32_MAGIC = 0x10b;
+constexpr uint32_t IMAGE_NT_OPTIONAL_HDR64_MAGIC = 0x20b;
+constexpr uint32_t IMAGE_ROM_OPTIONAL_HDR_MAGIC = 0x107;
+
 
 using rva_t = uint32_t;
 using export_ordinal_t = uint16_t;
@@ -80,6 +84,7 @@ struct ImageFileHeader {
     uint16_t SizeOfOptionalHeader;
     uint16_t Characteristics;
 };
+static_assert(sizeof(ImageFileHeader) == 20, "sizeof(File Header)");
 
 struct ImageDataDirectory {
     uint32_t VirtualAddress;
@@ -139,6 +144,7 @@ union DllCharacteristics {
     } bits;
     uint16_t data;
 };
+static_assert(sizeof(DllCharacteristics) == sizeof(uint16_t), "sizeof(DLL Characteristics)");
 
 struct ImageOptionalHeaders64 {
     uint16_t Magic; /* 0x20b */
@@ -172,6 +178,7 @@ struct ImageOptionalHeaders64 {
     uint32_t NumberOfRvaAndSizes;
     ImageDataDirectory DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
 };
+static_assert(sizeof(ImageOptionalHeaders64) == 240, "sizeof(Optional Header 64)");
 
 struct ImageNtHeaders64 {
     uint32_t Signature;
@@ -194,12 +201,12 @@ struct ImageOptionalHeaders32 {
     uint32_t ImageBase;
     uint32_t SectionAlignment;		/* 0x20 */
     uint32_t FileAlignment;
-    uint16_t  MajorOperatingSystemVersion;
-    uint16_t  MinorOperatingSystemVersion;
-    uint16_t  MajorImageVersion;
-    uint16_t  MinorImageVersion;
-    uint16_t  MajorSubsystemVersion;		/* 0x30 */
-    uint16_t  MinorSubsystemVersion;
+    uint16_t MajorOperatingSystemVersion;
+    uint16_t MinorOperatingSystemVersion;
+    uint16_t MajorImageVersion;
+    uint16_t MinorImageVersion;
+    uint16_t MajorSubsystemVersion;		/* 0x30 */
+    uint16_t MinorSubsystemVersion;
     uint32_t Win32VersionValue;
     uint32_t SizeOfImage;
     uint32_t SizeOfHeaders;
@@ -215,6 +222,7 @@ struct ImageOptionalHeaders32 {
     ImageDataDirectory DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES]; /* 0x60 */
     /* 0xE0 */
 };
+static_assert(sizeof(ImageOptionalHeaders32) == 224, "sizeof(Optional Header 32)");
 
 struct ImageNtHeaders32 {
     uint32_t Signature; /* "PE"\0\0 */	/* 0x00 */
@@ -239,6 +247,7 @@ struct ImageSectionHeader {
     uint16_t NumberOfLinenumbers;
     uint32_t Characteristics;
 };
+static_assert(sizeof(ImageSectionHeader) == 40, "sizeof(Section Header)");
 
 struct ImageExportDirectory {
     uint32_t Characteristics;

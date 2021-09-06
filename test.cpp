@@ -28,7 +28,7 @@ int main() {
 
         {
             auto peExport = image.exportSection();
-            pe::rva_t rva = peExport.findExportByName("MmAllocateContiguousMemory");
+            pe::rva_t rva = peExport.findExportByName("ExAllocatePoolWithTag");
             auto ptr = image.rvaToPointer<uint8_t>(rva);
 
             printf("Found: 0x%x\n", ptr);

@@ -13,7 +13,8 @@ class BadHeaderException : public Exception {
 public:
     enum class ProblemReason {
         DOS_MAGIC,
-        NT_SIGNATURE
+        NT_SIGNATURE,
+        OPTIONAL_HEADER_MAGIC
     };
 
     explicit BadHeaderException(ProblemReason reason)
