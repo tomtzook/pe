@@ -6,6 +6,7 @@
 
 #include "pe.h"
 #include "except.h"
+#include "debug.h"
 
 
 void readFile(const char* path, std::vector<char>& buffer) {
@@ -25,24 +26,29 @@ int main(int argc, char** argv) {
     readFile(pePath, buffer);
 
     pe::Image image(buffer.data());
+    std::cout << image << std::endl;
 
-    auto exportTable = image.exportTable();
+    try {
+        auto exportTable = image.exportTable();
 
-    std::cout << "EXPORT TABLE" << std::endl;
-    for(const auto& addressEntry : exportTable) {
-        std::cout << " rva=" << addressEntry.rva()
-                  << ", ordinal=" << addressEntry.ordinal()
-                  << ", baised=" << addressEntry.baisedOrdinal()
-                  << ", ptr=" << reinterpret_cast<const void*>(image.rvaToPointer<uint8_t>(addressEntry.rva()));
+        std::cout << "EXPORT TABLE" << std::endl;
+        for(const auto& addressEntry : exportTable) {
+            std::cout << " rva=0x" << std::hex << addressEntry.rva()
+                      << ", ordinal=0x" << std::hex << addressEntry.ordinal()
+                      << ", baised=0x" << std::hex << addressEntry.baisedOrdinal()
+                      << ", ptr=0x" << reinterpret_cast<const void*>(image.rvaToPointer<uint8_t>(addressEntry.rva()));
 
-        try {
-            auto nameEntry = exportTable.names()[addressEntry.ordinal()];
-            std::cout << " name=" << nameEntry.name();
-        } catch (const pe::OrdinalNotFoundException& ex) {
-            // no name for export
+            try {
+                auto nameEntry = exportTable.names()[addressEntry.ordinal()];
+                std::cout << " name=" << nameEntry.name();
+            } catch (const pe::OrdinalNotFoundException& ex) {
+                // no name for export
+            }
+
+            std::cout << std::endl;
         }
-
-        std::cout << std::endl;
+    } catch (const pe::NoExportTableException& ex) {
+        std::cout << "PE does not have export table" << std::endl;
     }
 
     return 0;

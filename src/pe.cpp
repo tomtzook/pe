@@ -39,7 +39,7 @@ const ExportTable& Image::exportTable() const {
         return m_exportTable.value();
     }
 
-    throw NameNotFoundException(".edata");
+    throw NoExportTableException();
 }
 
 void Image::loadSections() {

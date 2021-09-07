@@ -58,6 +58,18 @@ size_t PeHeaders::sectionAlignment() const {
     return m_ntHeaders->OptionalHeader.SectionAlignment;
 }
 
+bool PeHeaders::hasEntryPoint() const {
+    return 0 != m_ntHeaders->OptionalHeader.AddressOfEntryPoint;
+}
+
+rva_t PeHeaders::entryPointAddress() const {
+    if (!hasEntryPoint()) {
+        throw NoEntryPointException();
+    }
+
+    return m_ntHeaders->OptionalHeader.AddressOfEntryPoint;
+}
+
 void PeHeaders::checkValidHeaders() {
     if (IMAGE_DOS_SIGNATURE != m_dosHeader->e_magic) {
         throw BadHeaderException(BadHeaderException::ProblemReason::DOS_MAGIC);

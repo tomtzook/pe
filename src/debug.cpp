@@ -19,6 +19,10 @@ std::ostream& operator<<(std::ostream& os, const pe::PeHeaders& headers) {
        std::endl;
     os << "\tcharacteristics=" << headers.characteristics() << std::endl;
     os << "\tDLL characteristics=" << headers.dllCharacteristics();
+    if (headers.hasEntryPoint()) {
+        os << std::endl << "\tEntry point RVA=0x" <<
+            std::hex << headers.entryPointAddress();
+    }
 
     return os;
 }

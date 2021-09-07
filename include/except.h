@@ -120,4 +120,12 @@ private:
     rva_t m_rva;
 };
 
+class NoEntryPointException : public Exception {
+
+};
+
+class NoExportTableException : public Exception {
+
+};
+
 }

@@ -5,6 +5,9 @@
 #include <vector>
 
 #include "pe.h"
+#include "debug.h"
+#include "except.h"
+
 
 void readFile(const char* path, std::vector<char>& buffer) {
     std::ifstream file(path, std::ios::binary | std::ios::ate);
@@ -24,17 +27,27 @@ int main(int argc, char** argv) {
     readFile(pePath, buffer);
 
     pe::Image image(buffer.data());
+    std::cout << image << std::endl;
 
-    auto exportTable = image.exportTable();
+    try {
+        auto exportTable = image.exportTable();
 
-    auto entry = exportTable.names()[exportName];
-    pe::rva_t rva = exportTable[entry.ordinal()];
+        auto entry = exportTable.names()[exportName];
+        pe::rva_t rva = exportTable[entry.ordinal()];
 
-    size_t offset = image.rvaToOffset(rva);
-    auto ptr = image.rvaToPointer<void>(rva);
+        size_t offset = image.rvaToOffset(rva);
+        auto ptr = image.rvaToPointer<void>(rva);
 
-    printf("Found export %s at RVA=0x%x, OFFSET=0x%zx, RAW_PTR=0x%p\n",
-           exportName, rva, offset, ptr);
+        std::cout << "Found export " << exportName <<
+                  " at RVA=0x" << std::hex << rva <<
+                  ", OFFSET=0x" << std::hex << offset <<
+                  ", PTR=0x" << reinterpret_cast<const void*>(ptr) <<
+                  std::endl;
+    } catch (const pe::NameNotFoundException& ex) {
+        std::cout << "Export " << exportName << " not found" << std::endl;
+    } catch (const pe::NoExportTableException& ex) {
+        std::cout << "PE does not have export table" << std::endl;
+    }
 
     return 0;
 }

@@ -23,6 +23,9 @@ public:
     size_t sectionsCount() const;
     size_t sectionAlignment() const;
 
+    bool hasEntryPoint() const;
+    rva_t entryPointAddress() const;
+
 private:
     void checkValidHeaders();
 
