@@ -50,9 +50,9 @@ private:
     rva_t m_rva;
 };
 
-class NotFoundException : public Exception {
+class NameNotFoundException : public Exception {
 public:
-    explicit NotFoundException(const char* name)
+    explicit NameNotFoundException(const char* name)
         : m_name(name)
     {}
 
@@ -62,6 +62,20 @@ public:
 
 private:
     const char* m_name;
+};
+
+class OrdinalNotFoundException : public Exception {
+public:
+    explicit OrdinalNotFoundException(export_ordinal_t ordinal)
+        : m_ordinal(ordinal)
+    {}
+
+    export_ordinal_t ordinal() const {
+        return m_ordinal;
+    }
+
+private:
+    export_ordinal_t m_ordinal;
 };
 
 class RvaIsForwarderException : public Exception {

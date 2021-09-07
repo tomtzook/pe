@@ -69,6 +69,7 @@ public:
     iterator end() const;
 
     entry operator[](name_type name) const;
+    entry operator[](ordinal_type ordinal) const;
 
 private:
     const ImageExportDirectory* m_directory;
@@ -77,12 +78,66 @@ private:
 
 class ExportTable {
 public:
+    class iterator;
+
+    struct entry {
+    public:
+        entry(const entry& entry);
+        entry& operator=(const entry& other);
+
+        rva_t rva() const;
+        export_ordinal_t ordinal() const;
+        export_ordinal_t baisedOrdinal() const;
+
+    private:
+        entry(const ImageExportDirectory* directory,
+              rva_t rva, export_ordinal_t ordinal);
+
+        const ImageExportDirectory* m_directory;
+        rva_t m_rva;
+        export_ordinal_t m_ordinal;
+
+        friend iterator;
+    };
+
+    class iterator {
+    public:
+        using value_type = entry;
+        using reference = entry;
+        using pointer = entry;
+        using iterator_category = std::bidirectional_iterator_tag;
+
+        iterator(const ImageExportDirectory* directory, const Section& section,
+                 const rva_t* namePointerPtr, export_ordinal_t currentOrdinal);
+
+        iterator& operator++();
+        iterator& operator--();
+
+        reference operator*();
+        pointer operator->();
+
+        bool operator==(const iterator& rhs);
+        bool operator!=(const iterator& rhs);
+
+    private:
+        const ImageExportDirectory* m_directory;
+        const Section& m_section;
+
+        const rva_t* m_addressTablePtr;
+        export_ordinal_t m_currentOrdinal;
+    };
+
     ExportTable(const ImageExportDirectory* directory, Section section);
 
     const char* imageName() const;
 
     export_ordinal_t toUnbaised(export_ordinal_t baisedOrdinal) const;
     rva_t operator[](export_ordinal_t ordinal) const;
+
+    size_t count() const;
+
+    iterator begin() const;
+    iterator end() const;
 
     const ExportedNamesTable& names() const;
 

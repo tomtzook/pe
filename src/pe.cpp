@@ -39,7 +39,7 @@ const ExportTable& Image::exportTable() const {
         return m_exportTable.value();
     }
 
-    throw NotFoundException(".edata");
+    throw NameNotFoundException(".edata");
 }
 
 void Image::loadSections() {
@@ -50,7 +50,7 @@ void Image::loadSections() {
         auto exportDirectory = rvaToPointer<ImageExportDirectory>(exportDataDirectory->VirtualAddress);
 
         m_exportTable.emplace(ExportTable(exportDirectory, section));
-    } catch (const NotFoundException& ex) {}
+    } catch (const NameNotFoundException& ex) {}
 }
 
 }
