@@ -85,7 +85,7 @@ Section ImageSections::operator[](const char* name) const {
         }
     }
 
-    throw NameNotFoundException(name);
+    throw SectionNotFoundException(name);
 }
 
 ImageSections::iterator ImageSections::begin() const {

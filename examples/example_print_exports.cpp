@@ -41,13 +41,13 @@ int main(int argc, char** argv) {
             try {
                 auto nameEntry = exportTable.names()[addressEntry.ordinal()];
                 std::cout << " name=" << nameEntry.name();
-            } catch (const pe::OrdinalNotFoundException& ex) {
+            } catch (const pe::ExportOrdinalNotFoundException&) {
                 // no name for export
             }
 
             std::cout << std::endl;
         }
-    } catch (const pe::NoExportTableException& ex) {
+    } catch (const pe::NoExportTableException&) {
         std::cout << "PE does not have export table" << std::endl;
     }
 

@@ -7,6 +7,10 @@
 namespace pe {
 
 class Exception : public std::exception {
+public:
+    virtual const char* what() const noexcept override {
+        return "PE Exception";
+    }
 };
 
 class BadHeaderException : public Exception {
@@ -24,6 +28,10 @@ public:
 
     ProblemReason reason() const {
         return m_reason;
+    }
+
+    virtual const char* what() const noexcept override {
+        return "Bad Header";
     }
 
 private:
@@ -45,6 +53,10 @@ public:
         return m_rva;
     }
 
+    virtual const char* what() const noexcept override {
+        return "RVA not in section";
+    }
+
 private:
     const Section& m_section;
     rva_t m_rva;
@@ -60,18 +72,48 @@ public:
         return m_name;
     }
 
+    virtual const char* what() const noexcept override {
+        return "Name not found";
+    }
+
 private:
     const char* m_name;
 };
 
-class OrdinalNotFoundException : public Exception {
+class SectionNotFoundException : public NameNotFoundException {
 public:
-    explicit OrdinalNotFoundException(export_ordinal_t ordinal)
+    explicit SectionNotFoundException(const char* name)
+        : NameNotFoundException(name)
+    {}
+
+    virtual const char* what() const noexcept override {
+        return "Section not found";
+    }
+};
+
+class ExportNameNotFoundException : public NameNotFoundException {
+public:
+    explicit ExportNameNotFoundException(const char* name)
+        : NameNotFoundException(name)
+    {}
+
+    virtual const char* what() const noexcept override {
+        return "Exported name not found";
+    }
+};
+
+class ExportOrdinalNotFoundException : public Exception {
+public:
+    explicit ExportOrdinalNotFoundException(export_ordinal_t ordinal)
         : m_ordinal(ordinal)
     {}
 
     export_ordinal_t ordinal() const {
         return m_ordinal;
+    }
+
+    virtual const char* what() const noexcept override {
+        return "Export ordinal not found";
     }
 
 private:
@@ -80,16 +122,20 @@ private:
 
 class RvaIsForwarderException : public Exception {
 public:
-    explicit RvaIsForwarderException(export_ordinal_t unbaisedOrdinal)
-        : m_unbaisedOrdinal(unbaisedOrdinal)
+    explicit RvaIsForwarderException(export_ordinal_t ordinal)
+        : m_ordinal(ordinal)
     {}
 
-    export_ordinal_t unbaisedOrdinal() const {
-        return m_unbaisedOrdinal;
+    export_ordinal_t ordinal() const {
+        return m_ordinal;
+    }
+
+    virtual const char* what() const noexcept override {
+        return "RVA is forwarder";
     }
 
 private:
-    export_ordinal_t m_unbaisedOrdinal;
+    export_ordinal_t m_ordinal;
 };
 
 class DataDirectoryNotPresent : public Exception {
@@ -100,6 +146,10 @@ public:
 
     DataDirectoryType type() const {
         return m_type;
+    }
+
+    virtual const char* what() const noexcept override {
+        return "Data Directory not present";
     }
 
 private:
@@ -116,16 +166,28 @@ public:
         return m_rva;
     }
 
+    virtual const char* what() const noexcept override {
+        return "RVA not in image";
+    }
+
 private:
     rva_t m_rva;
 };
 
 class NoEntryPointException : public Exception {
+public:
 
+    virtual const char* what() const noexcept override {
+        return "No entry point";
+    }
 };
 
 class NoExportTableException : public Exception {
+public:
 
+    virtual const char* what() const noexcept override {
+        return "No export table";
+    }
 };
 
 }

@@ -43,9 +43,9 @@ int main(int argc, char** argv) {
                   ", OFFSET=0x" << std::hex << offset <<
                   ", PTR=0x" << reinterpret_cast<const void*>(ptr) <<
                   std::endl;
-    } catch (const pe::NameNotFoundException& ex) {
+    } catch (const pe::NameNotFoundException&) {
         std::cout << "Export " << exportName << " not found" << std::endl;
-    } catch (const pe::NoExportTableException& ex) {
+    } catch (const pe::NoExportTableException&) {
         std::cout << "PE does not have export table" << std::endl;
     }
 

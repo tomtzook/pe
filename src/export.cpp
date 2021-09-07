@@ -100,7 +100,7 @@ ExportedNamesTable::entry ExportedNamesTable::operator[](name_type name) const {
         }
     }
 
-    throw NameNotFoundException(name);
+    throw ExportNameNotFoundException(name);
 }
 
 ExportedNamesTable::entry ExportedNamesTable::operator[](ordinal_type ordinal) const {
@@ -110,7 +110,7 @@ ExportedNamesTable::entry ExportedNamesTable::operator[](ordinal_type ordinal) c
         }
     }
 
-    throw OrdinalNotFoundException(ordinal);
+    throw ExportOrdinalNotFoundException(ordinal);
 }
 
 ExportTable::entry::entry(const entry& other)

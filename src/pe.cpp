@@ -50,7 +50,9 @@ void Image::loadSections() {
         auto exportDirectory = rvaToPointer<ImageExportDirectory>(exportDataDirectory->VirtualAddress);
 
         m_exportTable.emplace(ExportTable(exportDirectory, section));
-    } catch (const NameNotFoundException& ex) {}
+    } catch (const SectionNotFoundException& ex) {
+        // no export section
+    }
 }
 
 }
