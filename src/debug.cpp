@@ -188,8 +188,20 @@ std::ostream& operator<<(std::ostream& os, const pe::SectionCharacteristicsAlign
 
 std::ostream& operator<<(std::ostream& os, const pe::ExportedNamesTable::entry& entry) {
     os << "name=" << entry.name()
-        << " unbaised=0x" << entry.ordinal()
-        << " baised=0x" << entry.baisedOrdinal();
+        << " ordinal=0x" << std::hex << entry.ordinal()
+        << " baised=0x" << std::hex << entry.baisedOrdinal();
+
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const pe::ImportedModule::entry& entry) {
+    if (entry.is_ordinal()) {
+        os << "ordinal=0x" << std::hex << entry.ordinal();
+    } else if (entry.is_name()) {
+        os << "name=" << entry.name();
+    } else {
+        os << "<n/a>";
+    }
 
     return os;
 }
