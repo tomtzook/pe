@@ -24,6 +24,10 @@ size_t Section::alignedVirtualSize() const {
     return roundUp(static_cast<size_t>(m_header->SizeOfRawData), m_headers.sectionAlignment());
 }
 
+SectionCharacteristics Section::characteristics() const {
+    return SectionCharacteristics {.data=m_header->Characteristics};
+}
+
 bool Section::containsRva(rva_t rva) const {
     return rva >= m_header->VirtualAddress &&
         rva <= m_header->VirtualAddress + alignedVirtualSize();

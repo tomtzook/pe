@@ -254,6 +254,54 @@ struct ImageNtHeaders32 {
     ImageOptionalHeaders32 OptionalHeader;	/* 0x18 */
 };
 
+enum SectionCharacteristicsAlignment {
+    ALIGN_1BYTES = 0x1,
+    ALIGN_2BYTES = 0x2,
+    ALIGN_4BYTES = 0x3,
+    ALIGN_8BYTES = 0x4,
+    ALIGN_16BYTES = 0x5,
+    ALIGN_32BYTES = 0x6,
+    ALIGN_64BYTES = 0x7,
+    ALIGN_128BYTES = 0x8,
+    ALIGN_256BYTES = 0x9,
+    ALIGN_512BYTES = 0xa,
+    ALIGN_1024BYTES = 0xb,
+    ALIGN_2048BYTES = 0xc,
+    ALIGN_4096BYTES = 0xd,
+    ALIGN_8192BYTES = 0xe
+};
+
+union SectionCharacteristics {
+    uint32_t data;
+    struct {
+        uint32_t reserved0 : 3;
+        uint32_t typeNoPad : 1;
+        uint32_t reserved1 : 1;
+        uint32_t cntCode : 1;
+        uint32_t cntInitializedData : 1;
+        uint32_t cntUnInitializedData : 1;
+        uint32_t lnkOther : 1;
+        uint32_t lnkiNFO : 1;
+        uint32_t reserved2 : 1;
+        uint32_t lnkRemove : 1;
+        uint32_t lnkComdat : 1;
+        uint32_t reserved3 : 2;
+        uint32_t gprel : 1;
+        uint32_t reserved4 : 1;
+        uint32_t reserved5 : 3;
+        uint32_t alignment : 4;
+        uint32_t lnkNrelocOvfl : 1;
+        uint32_t memDiscardable : 1;
+        uint32_t memNotCached : 1;
+        uint32_t memNotPaged : 1;
+        uint32_t memShared : 1;
+        uint32_t memExecute : 1;
+        uint32_t memRead : 1;
+        uint32_t memWrite : 1;
+    } bits;
+};
+static_assert(sizeof(SectionCharacteristics) == 4, "sizeof(Section Characteristics)");
+
 #define IMAGE_SIZEOF_SHORT_NAME 8
 
 struct ImageSectionHeader {

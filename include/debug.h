@@ -15,5 +15,7 @@ std::ostream& operator<<(std::ostream& os, const pe::Subsystem& subsystem);
 std::ostream& operator<<(std::ostream& os, const pe::DllCharacteristics& ch);
 
 std::ostream& operator<<(std::ostream& os, const pe::Section& section);
+std::ostream& operator<<(std::ostream& os, const pe::SectionCharacteristics& ch);
+std::ostream& operator<<(std::ostream& os, const pe::SectionCharacteristicsAlignment& alignment);
 
 std::ostream& operator<<(std::ostream& os, const pe::ExportedNamesTable::entry& entry);

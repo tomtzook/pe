@@ -13,14 +13,14 @@
 
 
 std::ostream& operator<<(std::ostream& os, const pe::PeHeaders& headers) {
-    os << "IMAGE size=0x" << std::hex << headers.size() <<
-       ", machine=" << headers.machineType() <<
-       ", subsystem=" << headers.subsystem() <<
+    os << "IMAGE size= 0x" << std::hex << headers.size() <<
+       ", machine= " << headers.machineType() <<
+       ", subsystem= " << headers.subsystem() <<
        std::endl;
-    os << "\tcharacteristics=" << headers.characteristics() << std::endl;
-    os << "\tDLL characteristics=" << headers.dllCharacteristics();
+    os << "\tcharacteristics= " << headers.characteristics() << std::endl;
+    os << "\tDLL characteristics= " << headers.dllCharacteristics();
     if (headers.hasEntryPoint()) {
-        os << std::endl << "\tEntry point RVA=0x" <<
+        os << std::endl << "\tEntry point RVA= 0x" <<
             std::hex << headers.entryPointAddress();
     }
 
@@ -30,7 +30,7 @@ std::ostream& operator<<(std::ostream& os, const pe::PeHeaders& headers) {
 std::ostream& operator<<(std::ostream& os, const pe::Image& image) {
     os << image.headers();
     if (image.hasExportTable()) {
-        os << std::endl << "\tname=" << image.exportTable().imageName();
+        os << std::endl << "\tname= " << image.exportTable().imageName();
     }
 
     return os;
@@ -129,7 +129,60 @@ std::ostream& operator<<(std::ostream& os, const pe::DllCharacteristics& ch) {
 }
 
 std::ostream& operator<<(std::ostream& os, const pe::Section& section) {
-    os << "SECTION name=" << section.name() << ", size=0x" << std::hex << section.alignedVirtualSize();
+    os << "SECTION name=" << section.name() << ", size=0x" << std::hex << section.alignedVirtualSize() << std::endl;
+    os << "\tcharacteristics= " << section.characteristics();
+
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const pe::SectionCharacteristics& ch) {
+    bool has = false;
+    FLAG_BIT_DEBUG(ch.bits.typeNoPad, "TYPE_NO_PAD");
+    FLAG_BIT_DEBUG(ch.bits.cntCode, "CNT_CODE");
+    FLAG_BIT_DEBUG(ch.bits.cntInitializedData, "CNT_INITIALIZED_DATA");
+    FLAG_BIT_DEBUG(ch.bits.cntUnInitializedData, "CNT_UNINITIALIZED_DATA");
+    FLAG_BIT_DEBUG(ch.bits.lnkOther, "LNK_OTHER");
+    FLAG_BIT_DEBUG(ch.bits.lnkiNFO, "LNK_INFO");
+    FLAG_BIT_DEBUG(ch.bits.lnkRemove, "LNK_REMOVE");
+    FLAG_BIT_DEBUG(ch.bits.lnkComdat, "LNK_COMDAT");
+    FLAG_BIT_DEBUG(ch.bits.gprel, "GPREL");
+    FLAG_BIT_DEBUG(ch.bits.lnkNrelocOvfl, "LNK_NRELOC_OVFL");
+    FLAG_BIT_DEBUG(ch.bits.memDiscardable, "MEM_DISCARDABLE");
+    FLAG_BIT_DEBUG(ch.bits.memNotCached, "MEM_NOT_CACHED");
+    FLAG_BIT_DEBUG(ch.bits.memNotPaged, "MEM_NOT_PAGED");
+    FLAG_BIT_DEBUG(ch.bits.memShared, "MEM_SHARED");
+    FLAG_BIT_DEBUG(ch.bits.memExecute, "MEM_EXECUTE");
+    FLAG_BIT_DEBUG(ch.bits.memRead, "MEM_READ");
+    FLAG_BIT_DEBUG(ch.bits.memWrite, "MEM_WRITE");
+
+    if (ch.bits.alignment) {
+        if (has) {
+            os << " | ";
+        }
+        os << pe::SectionCharacteristicsAlignment(ch.bits.alignment);
+    }
+
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const pe::SectionCharacteristicsAlignment& alignment) {
+    switch (alignment) {
+        case pe::SectionCharacteristicsAlignment::ALIGN_1BYTES: os << "ALIGN_1BYTES"; break;
+        case pe::SectionCharacteristicsAlignment::ALIGN_2BYTES: os << "ALIGN_2BYTES"; break;
+        case pe::SectionCharacteristicsAlignment::ALIGN_4BYTES: os << "ALIGN_4BYTES"; break;
+        case pe::SectionCharacteristicsAlignment::ALIGN_8BYTES: os << "ALIGN_8BYTES"; break;
+        case pe::SectionCharacteristicsAlignment::ALIGN_16BYTES: os << "ALIGN_16BYTES"; break;
+        case pe::SectionCharacteristicsAlignment::ALIGN_32BYTES: os << "ALIGN_32BYTES"; break;
+        case pe::SectionCharacteristicsAlignment::ALIGN_64BYTES: os << "ALIGN_64BYTES"; break;
+        case pe::SectionCharacteristicsAlignment::ALIGN_128BYTES: os << "ALIGN_128BYTES"; break;
+        case pe::SectionCharacteristicsAlignment::ALIGN_256BYTES: os << "ALIGN_256BYTES"; break;
+        case pe::SectionCharacteristicsAlignment::ALIGN_512BYTES: os << "ALIGN_512BYTES"; break;
+        case pe::SectionCharacteristicsAlignment::ALIGN_1024BYTES: os << "ALIGN_1024BYTES"; break;
+        case pe::SectionCharacteristicsAlignment::ALIGN_2048BYTES: os << "ALIGN_2048BYTES"; break;
+        case pe::SectionCharacteristicsAlignment::ALIGN_4096BYTES: os << "ALIGN_4096BYTES"; break;
+        case pe::SectionCharacteristicsAlignment::ALIGN_8192BYTES: os << "ALIGN_8192BYTES"; break;
+    }
+
     return os;
 }
 

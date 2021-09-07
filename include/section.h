@@ -14,6 +14,7 @@ public:
 
     const char* name() const;
     size_t alignedVirtualSize() const;
+    SectionCharacteristics characteristics() const;
 
     bool containsRva(rva_t rva) const;
     size_t rvaToOffset(rva_t rva) const;
