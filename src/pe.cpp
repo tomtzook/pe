@@ -42,15 +42,42 @@ const ExportTable& Image::exportTable() const {
     throw NoExportTableException();
 }
 
+bool Image::hasImportTable() const {
+    return m_importTable.has_value();
+}
+
+const ImportTable& Image::importTable() const {
+    if (m_importTable.has_value()) {
+        return m_importTable.value();
+    }
+
+    throw NoImportTableException();
+}
+
 void Image::loadSections() {
     // load export
     try {
-        auto section = m_sections[".edata"];
         auto exportDataDirectory = m_headers.dataDirectory(IMAGE_DIRECTORY_ENTRY_EXPORT);
-        auto exportDirectory = rvaToPointer<ImageExportDirectory>(exportDataDirectory->VirtualAddress);
+        auto section = m_sections[exportDataDirectory->VirtualAddress];
+        auto exportDirectory = section.rvaToPointer<ImageExportDirectory>(exportDataDirectory->VirtualAddress);
 
         m_exportTable.emplace(ExportTable(exportDirectory, section));
-    } catch (const SectionNotFoundException& ex) {
+    } catch (const DataDirectoryNotPresent&) {
+        // no export section
+    } catch (const RvaNotInImageException&) {
+        // no export section
+    }
+
+    // load import
+    try {
+        auto importDataDirectory = m_headers.dataDirectory(IMAGE_DIRECTORY_ENTRY_IMPORT);
+        auto section = m_sections[importDataDirectory->VirtualAddress];
+        auto importDirectory = section.rvaToPointer<ImageImportDescriptor>(importDataDirectory->VirtualAddress);
+
+        m_importTable.emplace(ImportTable(importDirectory, section));
+    } catch (const DataDirectoryNotPresent&) {
+        // no import section
+    } catch (const RvaNotInImageException&) {
         // no export section
     }
 }

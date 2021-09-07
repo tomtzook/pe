@@ -182,11 +182,25 @@ public:
     }
 };
 
-class NoExportTableException : public Exception {
+class NoExportTableException : public SectionNotFoundException {
 public:
+    NoExportTableException()
+        : SectionNotFoundException("Export (usually .edata)")
+    {}
 
     virtual const char* what() const noexcept override {
         return "No export table";
+    }
+};
+
+class NoImportTableException : public SectionNotFoundException {
+public:
+    NoImportTableException()
+        : SectionNotFoundException("Import (usually .idata)")
+    {}
+
+    virtual const char* what() const noexcept override {
+        return "No import table";
     }
 };
 

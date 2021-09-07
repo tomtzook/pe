@@ -1,5 +1,6 @@
 
 #include <cstring>
+
 #include "util.h"
 #include "except.h"
 #include "section.h"
@@ -86,6 +87,16 @@ Section ImageSections::operator[](const char* name) const {
     }
 
     throw SectionNotFoundException(name);
+}
+
+Section ImageSections::operator[](rva_t rva) const {
+    for(const auto& section : *this) {
+        if (section.containsRva(rva)) {
+            return section;
+        }
+    }
+
+    throw RvaNotInImageException(rva);
 }
 
 ImageSections::iterator ImageSections::begin() const {

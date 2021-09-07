@@ -7,6 +7,7 @@
 #include "pe_base.h"
 #include "section.h"
 #include "export.h"
+#include "import.h"
 
 namespace pe {
 
@@ -27,6 +28,9 @@ public:
     bool hasExportTable() const;
     const ExportTable& exportTable() const;
 
+    bool hasImportTable() const;
+    const ImportTable& importTable() const;
+
 private:
     void loadSections();
 
@@ -34,6 +38,7 @@ private:
 
     const ImageSections m_sections;
     std::optional<ExportTable> m_exportTable;
+    std::optional<ImportTable> m_importTable;
 };
 
 }

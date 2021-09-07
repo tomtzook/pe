@@ -335,6 +335,41 @@ struct ImageExportDirectory {
     uint32_t AddressOfNameOrdinals;
 };
 
+struct ImageImportDescriptor {
+    union {
+        uint32_t	Characteristics; /* 0 for terminating null import descriptor  */
+        uint32_t	OriginalFirstThunk;	/* RVA to original unbound IAT */
+    } DUMMYUNIONNAME;
+    uint32_t TimeDateStamp;	/* 0 if not bound,
+				 * -1 if bound, and real date\time stamp
+				 *    in IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT
+				 * (new BIND)
+				 * otherwise date/time stamp of DLL bound to
+				 * (Old BIND)
+				 */
+    uint32_t ForwarderChain;	/* -1 if no forwarders */
+    uint32_t Name;
+    /* RVA to IAT (if bound this IAT has actual addresses) */
+    uint32_t FirstThunk;
+};
+
+#define IMAGE_ORDINAL_FLAG64             (((uint64_t)0x80000000 << 32) | 0x00000000)
+#define IMAGE_ORDINAL_FLAG32             0x80000000
+
+struct ImageThunkData64 {
+    union {
+        uint64_t ForwarderString;
+        uint64_t Function;
+        uint64_t Ordinal;
+        uint64_t AddressOfData;
+    } u1;
+};
+
+struct ImageImportByName {
+    uint16_t Hint;
+    uint8_t Name[1];
+};
+
 #pragma pack(pop)
 
 }

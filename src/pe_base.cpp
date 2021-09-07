@@ -40,6 +40,9 @@ const ImageDataDirectory* PeHeaders::dataDirectory(DataDirectoryType type) const
     if (type >= m_ntHeaders->OptionalHeader.NumberOfRvaAndSizes) {
         throw DataDirectoryNotPresent(type);
     }
+    if (0 == m_ntHeaders->OptionalHeader.DataDirectory[type].VirtualAddress) {
+        throw DataDirectoryNotPresent(type);
+    }
 
     return m_ntHeaders->OptionalHeader.DataDirectory + type;
 }

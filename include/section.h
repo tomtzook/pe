@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <iterator>
 
 #include "winnt_def.h"
 #include "pe_base.h"
@@ -60,6 +61,7 @@ public:
     size_t count() const;
 
     Section operator[](const char* name) const;
+    Section operator[](rva_t rva) const;
 
     iterator begin() const;
     iterator end() const;
