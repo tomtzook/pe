@@ -1,44 +1,27 @@
 #pragma once
 
-#include <vector>
-#include <optional>
-
-#include "winnt_def.h"
 #include "pe_base.h"
 #include "section.h"
 #include "export.h"
+#include "exception.h"
 #include "import.h"
 
 namespace pe {
 
-class Image {
+class image {
 public:
-    explicit Image(const void* peBuffer);
+    explicit image(const void* buffer);
 
-    const PeHeaders& headers() const;
+    [[nodiscard]] const headers& headers() const;
+    [[nodiscard]] const section_list& sections() const;
 
-    const ImageSections& sections() const;
-    size_t rvaToOffset(rva_t rva) const;
-    template<typename T>
-    const T* rvaToPointer(rva_t rva) const {
-        size_t offset = rvaToOffset(rva);
-        return reinterpret_cast<const T*>(m_headers.base() + offset);
-    }
-
-    bool hasExportTable() const;
-    const ExportTable& exportTable() const;
-
-    bool hasImportTable() const;
-    const ImportTable& importTable() const;
+    [[nodiscard]] export_table load_export_table() const;
+    [[nodiscard]] import_table load_import_table() const;
+    [[nodiscard]] functions_table load_exception_table() const;
 
 private:
-    void loadSections();
-
-    PeHeaders m_headers;
-
-    const ImageSections m_sections;
-    std::optional<ExportTable> m_exportTable;
-    std::optional<ImportTable> m_importTable;
+    pe::headers m_headers;
+    const section_list m_sections;
 };
 
 }

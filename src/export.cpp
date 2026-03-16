@@ -1,232 +1,219 @@
 
-#include <cstring>
-#include "except.h"
 #include "export.h"
 
 
 namespace pe {
 
-ExportedNamesTable::entry::entry(const entry& other)
-        : m_directory(other.m_directory)
-        , m_name(other.m_name)
-        , m_ordinal(other.m_ordinal)
-{}
-
-ExportedNamesTable::entry& ExportedNamesTable::entry::operator=(const entry& other) {
-    m_directory = other.m_directory;
-    m_name = other.m_name;
-    m_ordinal = other.m_ordinal;
-
-    return *this;
+bool exported_names_table::entry::is_valid() const {
+    return m_directory != nullptr;
 }
 
-ExportedNamesTable::name_type ExportedNamesTable::entry::name() const {
+exported_names_table::name_type exported_names_table::entry::name() const {
     return m_name;
 }
-ExportedNamesTable::ordinal_type ExportedNamesTable::entry::ordinal() const {
+
+exported_names_table::ordinal_type exported_names_table::entry::ordinal() const {
     return m_ordinal;
 }
-ExportedNamesTable::ordinal_type ExportedNamesTable::entry::baisedOrdinal() const {
+
+exported_names_table::ordinal_type exported_names_table::entry::baised_ordinal() const {
     return m_ordinal + m_directory->OrdinalBase;
 }
 
-ExportedNamesTable::entry::entry(const ImageExportDirectory* directory, name_type name, ordinal_type ordinal)
+exported_names_table::entry::entry(const ImageExportDirectory* directory, const name_type name, const ordinal_type ordinal)
     : m_directory(directory)
     , m_name(name)
     , m_ordinal(ordinal)
 {}
 
-ExportedNamesTable::iterator::iterator(const ImageExportDirectory* directory, const Section& section,
-                                       const rva_t* namePointerPtr, const export_ordinal_t* ordinalTablePtr)
-        : m_directory(directory)
-        , m_section(section)
-        , m_namePointerPtr(namePointerPtr)
-        , m_ordinalTablePtr(ordinalTablePtr)
+exported_names_table::entry::entry()
+    : m_directory(nullptr)
+    , m_name()
+    , m_ordinal()
 {}
 
-ExportedNamesTable::iterator& ExportedNamesTable::iterator::operator++() {
-    m_namePointerPtr++;
-    m_ordinalTablePtr++;
+exported_names_table::iterator::iterator(const ImageExportDirectory* directory, const section& section,
+    const rva_t* name_pointer_ptr, const export_ordinal_t* ordinal_table_ptr)
+        : m_directory(directory)
+        , m_section(section)
+        , m_name_pointer_ptr(name_pointer_ptr)
+        , m_ordinal_table_ptr(ordinal_table_ptr)
+{}
+
+exported_names_table::iterator& exported_names_table::iterator::operator++() {
+    m_name_pointer_ptr++;
+    m_ordinal_table_ptr++;
     return *this;
 }
-ExportedNamesTable::iterator& ExportedNamesTable::iterator::operator--() {
-    m_namePointerPtr--;
-    m_ordinalTablePtr--;
+
+exported_names_table::iterator& exported_names_table::iterator::operator--() {
+    m_name_pointer_ptr--;
+    m_ordinal_table_ptr--;
     return *this;
 }
 
-ExportedNamesTable::iterator::reference ExportedNamesTable::iterator::operator*() {
-    return {m_directory, m_section.rvaToPointer<char>(*m_namePointerPtr), *m_ordinalTablePtr};
-}
-ExportedNamesTable::iterator::pointer ExportedNamesTable::iterator::operator->() {
-    return {m_directory, m_section.rvaToPointer<char>(*m_namePointerPtr), *m_ordinalTablePtr};
+exported_names_table::iterator::reference exported_names_table::iterator::operator*() {
+    return {m_directory, m_section.rva_to_pointer<char>(*m_name_pointer_ptr), *m_ordinal_table_ptr};
 }
 
-bool ExportedNamesTable::iterator::operator==(const iterator& rhs) {
-    return m_namePointerPtr == rhs.m_namePointerPtr;
-}
-bool ExportedNamesTable::iterator::operator!=(const iterator& rhs) {
-    return m_namePointerPtr != rhs.m_namePointerPtr;
+exported_names_table::iterator::pointer exported_names_table::iterator::operator->() {
+    return {m_directory, m_section.rva_to_pointer<char>(*m_name_pointer_ptr), *m_ordinal_table_ptr};
 }
 
-ExportedNamesTable::ExportedNamesTable(const ImageExportDirectory* directory, Section section)
+bool exported_names_table::iterator::operator==(const iterator& rhs) const {
+    return m_name_pointer_ptr == rhs.m_name_pointer_ptr;
+}
+
+bool exported_names_table::iterator::operator!=(const iterator& rhs) const {
+    return m_name_pointer_ptr != rhs.m_name_pointer_ptr;
+}
+
+exported_names_table::exported_names_table(const ImageExportDirectory* directory, const section section)
         : m_directory(directory)
         , m_section(section)
 {}
 
-size_t ExportedNamesTable::count() const {
+size_t exported_names_table::count() const {
     return m_directory->NumberOfNames;
 }
 
-ExportedNamesTable::iterator ExportedNamesTable::begin() const {
-    auto namePointerTable = m_section.rvaToPointer<rva_t>(m_directory->AddressOfNames);
-    auto ordinalTable = m_section.rvaToPointer<export_ordinal_t>(m_directory->AddressOfNameOrdinals);
+exported_names_table::iterator exported_names_table::begin() const {
+    const auto name_pointer_table = m_section.rva_to_pointer<rva_t>(m_directory->AddressOfNames);
+    const auto ordinal_table = m_section.rva_to_pointer<export_ordinal_t>(m_directory->AddressOfNameOrdinals);
 
-    return iterator(m_directory, m_section, namePointerTable, ordinalTable);
-}
-ExportedNamesTable::iterator ExportedNamesTable::end() const {
-    auto namePointerTable = m_section.rvaToPointer<rva_t>(m_directory->AddressOfNames);
-    auto ordinalTable = m_section.rvaToPointer<export_ordinal_t>(m_directory->AddressOfNameOrdinals);
-
-    return iterator(m_directory, m_section,
-                    namePointerTable + count(),
-                    ordinalTable + count());
+    return {m_directory, m_section, name_pointer_table, ordinal_table};
 }
 
-ExportedNamesTable::entry ExportedNamesTable::operator[](name_type name) const {
+exported_names_table::iterator exported_names_table::end() const {
+    const auto name_pointer_table = m_section.rva_to_pointer<rva_t>(m_directory->AddressOfNames);
+    const auto ordinal_table = m_section.rva_to_pointer<export_ordinal_t>(m_directory->AddressOfNameOrdinals);
+
+    return {m_directory, m_section, name_pointer_table + count(), ordinal_table + count()};
+}
+
+exported_names_table::entry exported_names_table::operator[](const name_type name) const {
     for (const auto& entry : *this) {
-        if(0 == strcmp(name, entry.name())) {
+        if(0 == __builtin_strcmp(name, entry.name())) {
             return entry;
         }
     }
 
-    throw ExportNameNotFoundException(name);
+    return {};
 }
 
-ExportedNamesTable::entry ExportedNamesTable::operator[](ordinal_type ordinal) const {
+exported_names_table::entry exported_names_table::operator[](const ordinal_type ordinal) const {
     for (const auto& entry : *this) {
         if(entry.ordinal() == ordinal) {
             return entry;
         }
     }
 
-    throw ExportOrdinalNotFoundException(ordinal);
+    return {};
 }
 
-ExportTable::entry::entry(const entry& other)
-    : m_directory(other.m_directory)
-    , m_rva(other.m_rva)
-    , m_ordinal(other.m_ordinal)
-{}
-
-ExportTable::entry& ExportTable::entry::operator=(const entry& other) {
-    m_directory = other.m_directory;
-    m_rva = other.m_rva;
-    m_ordinal = other.m_ordinal;
-
-    return *this;
-}
-
-rva_t ExportTable::entry::rva() const {
+rva_t export_table::entry::rva() const {
     return m_rva;
 }
 
-export_ordinal_t ExportTable::entry::ordinal() const {
+export_ordinal_t export_table::entry::ordinal() const {
     return m_ordinal;
 }
 
-export_ordinal_t ExportTable::entry::baisedOrdinal() const {
+export_ordinal_t export_table::entry::baised_ordinal() const {
     return m_ordinal + m_directory->OrdinalBase;
 }
 
-ExportTable::entry::entry(const ImageExportDirectory* directory,
-      rva_t rva, export_ordinal_t ordinal)
+export_table::entry::entry(const ImageExportDirectory* directory, const rva_t rva, const export_ordinal_t ordinal)
       : m_directory(directory)
       , m_rva(rva)
       , m_ordinal(ordinal)
 {}
 
-ExportTable::iterator::iterator(const ImageExportDirectory* directory, const Section& section,
-         const rva_t* addressTablePtr, export_ordinal_t currentOrdinal)
+export_table::iterator::iterator(const ImageExportDirectory* directory, const section& section,
+         const rva_t* name_pointer_ptr, const export_ordinal_t current_ordinal)
      : m_directory(directory)
      , m_section(section)
-     , m_addressTablePtr(addressTablePtr)
-     , m_currentOrdinal(currentOrdinal)
+     , m_address_table_ptr(name_pointer_ptr)
+     , m_current_ordinal(current_ordinal)
 {}
 
-ExportTable::iterator& ExportTable::iterator::operator++() {
-    m_addressTablePtr++;
-    m_currentOrdinal++;
+export_table::iterator& export_table::iterator::operator++() {
+    m_address_table_ptr++;
+    m_current_ordinal++;
     return *this;
 }
 
-ExportTable::iterator& ExportTable::iterator::operator--() {
-    m_addressTablePtr--;
-    m_currentOrdinal--;
+export_table::iterator& export_table::iterator::operator--() {
+    m_address_table_ptr--;
+    m_current_ordinal--;
     return *this;
 }
 
-ExportTable::iterator::reference ExportTable::iterator::operator*() {
-    return {m_directory, *m_addressTablePtr, m_currentOrdinal};
+export_table::iterator::reference export_table::iterator::operator*() {
+    return {m_directory, *m_address_table_ptr, m_current_ordinal};
 }
 
-ExportTable::iterator::pointer ExportTable::iterator::operator->() {
-    return {m_directory, *m_addressTablePtr, m_currentOrdinal};
+export_table::iterator::pointer export_table::iterator::operator->() {
+    return {m_directory, *m_address_table_ptr, m_current_ordinal};
 }
 
-bool ExportTable::iterator::operator==(const iterator& rhs) {
-    return m_addressTablePtr == rhs.m_addressTablePtr;
+bool export_table::iterator::operator==(const iterator& rhs) const {
+    return m_address_table_ptr == rhs.m_address_table_ptr;
 }
 
-bool ExportTable::iterator::operator!=(const iterator& rhs) {
-    return m_addressTablePtr != rhs.m_addressTablePtr;
+bool export_table::iterator::operator!=(const iterator& rhs) const {
+    return m_address_table_ptr != rhs.m_address_table_ptr;
 }
 
-ExportTable::ExportTable(const ImageExportDirectory* directory, Section section)
+export_table::export_table(const ImageExportDirectory* directory, const section section)
     : m_directory(directory)
     , m_section(section)
-    , m_namesTable(m_directory, m_section)
+    , m_names_table(m_directory, m_section)
 {}
 
-const char* ExportTable::imageName() const {
-    return m_section.rvaToPointer<char>(m_directory->Name);
+bool export_table::is_valid() const {
+    return m_directory != nullptr;
 }
 
-export_ordinal_t ExportTable::toUnbaised(export_ordinal_t baisedOrdinal) const {
-    return baisedOrdinal - m_directory->OrdinalBase;
+const char* export_table::image_name() const {
+    return m_section.rva_to_pointer<char>(m_directory->Name);
 }
 
-rva_t ExportTable::operator[](export_ordinal_t ordinal) const {
-    auto addressTable = m_section.rvaToPointer<rva_t>(m_directory->AddressOfFunctions);
-    rva_t rva = addressTable[ordinal];
+export_ordinal_t export_table::to_unbaised(const export_ordinal_t ordinal) const {
+    return ordinal - m_directory->OrdinalBase;
+}
+
+rva_t export_table::operator[](const export_ordinal_t ordinal) const {
+    const auto addressTable = m_section.rva_to_pointer<rva_t>(m_directory->AddressOfFunctions);
+    const auto rva = addressTable[ordinal];
 
     // If the address specified is not within the export section
     // (as defined by the address and length that are indicated in the optional header),
     // the field is an export RVA, which is an actual address in code or data.
     // Otherwise, the field is a forwarder RVA, which names a symbol in another DLL.
-    if (m_section.containsRva(rva)) {
-        throw RvaIsForwarderException(ordinal);
+    if (m_section.contains_rva(rva)) {
+        return static_cast<rva_t>(-1);
     }
 
     return rva;
 }
 
-size_t ExportTable::count() const {
+size_t export_table::count() const {
     return m_directory->NumberOfFunctions;
 }
 
-ExportTable::iterator ExportTable::begin() const {
-    auto addressTable = m_section.rvaToPointer<rva_t>(m_directory->AddressOfFunctions);
-    return iterator(m_directory, m_section, addressTable, 0);
+export_table::iterator export_table::begin() const {
+    const auto addressTable = m_section.rva_to_pointer<rva_t>(m_directory->AddressOfFunctions);
+    return {m_directory, m_section, addressTable, 0};
 }
 
-ExportTable::iterator ExportTable::end() const {
-    auto addressTable = m_section.rvaToPointer<rva_t>(m_directory->AddressOfFunctions);
-    return iterator(m_directory, m_section, addressTable + count(), count());
+export_table::iterator export_table::end() const {
+    auto address_table = m_section.rva_to_pointer<rva_t>(m_directory->AddressOfFunctions);
+    return {m_directory, m_section, address_table + count(), static_cast<export_ordinal_t>(count())};
 }
 
-const ExportedNamesTable& ExportTable::names() const {
-    return m_namesTable;
+const exported_names_table& export_table::names() const {
+    return m_names_table;
 }
 
 }

@@ -5,33 +5,31 @@
 
 namespace pe {
 
-struct PeHeaders {
-public:
-    explicit PeHeaders(const void* base);
+struct headers {
+    explicit headers(const void* base);
 
-    const uint8_t* base() const;
+    [[nodiscard]] bool is_valid() const;
+    [[nodiscard]] const uint8_t* base() const;
+    [[nodiscard]] size_t size() const;
 
-    size_t size() const;
-    MachineType machineType() const;
-    Characteristics characteristics() const;
-    Subsystem subsystem() const;
-    DllCharacteristics dllCharacteristics() const;
+    [[nodiscard]] MachineType machineType() const;
+    [[nodiscard]] Characteristics characteristics() const;
+    [[nodiscard]] Subsystem subsystem() const;
+    [[nodiscard]] DllCharacteristics dllCharacteristics() const;
 
-    const ImageDataDirectory* dataDirectory(DataDirectoryType type) const;
+    [[nodiscard]] const ImageDataDirectory* data_directory(DataDirectoryType type) const;
 
-    const ImageSectionHeader* getSectionHeaders() const;
-    size_t sectionsCount() const;
-    size_t sectionAlignment() const;
+    [[nodiscard]] const ImageSectionHeader* section_headers() const;
+    [[nodiscard]] size_t sections_count() const;
+    [[nodiscard]] size_t section_alignment() const;
 
-    bool hasEntryPoint() const;
-    rva_t entryPointAddress() const;
+    [[nodiscard]] bool has_entry_point() const;
+    [[nodiscard]] rva_t entry_point_address() const;
 
 private:
-    void checkValidHeaders();
-
     const uint8_t* m_base;
-    const ImageDosHeader* m_dosHeader;
-    const ImageNtHeaders64* m_ntHeaders;
+    const ImageDosHeader* m_dos_header;
+    const ImageNtHeaders64* m_nt_headers;
 };
 
 }

@@ -41,38 +41,38 @@ struct ImageDosHeader {  // DOS .EXE header
 };
 
 enum MachineType {
-    MACHINE_UNKNOWN	= 0,
-    MACHINE_I860 = 0x014d,
-    MACHINE_I386 = 0x014c,
-    MACHINE_R3000 = 0x0162,
-    MACHINE_R4000 = 0x0166,
-    MACHINE_R10000 = 0x0168,
-    MACHINE_WCEMIPSV2 = 0x0169,
-    MACHINE_ALPHA = 0x0184,
-    MACHINE_SH3 = 0x01a2,
-    MACHINE_SH3DSP = 0x01a3,
-    MACHINE_SH3E = 0x01a4,
-    MACHINE_SH4 = 0x01a6,
-    MACHINE_SH5 = 0x01a8,
-    MACHINE_ARM = 0x01c0,
-    MACHINE_THUMB = 0x01c2,
-    MACHINE_ARMNT = 0x01c4,
-    MACHINE_AM33 = 0x01d3,
-    MACHINE_POWERPC	= 0x01f0,
-    MACHINE_POWERPCFP = 0x01f1,
-    MACHINE_IA64 = 0x0200,
-    MACHINE_MIPS16 = 0x0266,
-    MACHINE_ALPHA64	= 0x0284,
-    MACHINE_MIPSFPU	= 0x0366,
-    MACHINE_MIPSFPU16 = 0x0466,
-    MACHINE_AXP64 = MACHINE_ALPHA64,
-    MACHINE_TRICORE	= 0x0520,
-    MACHINE_CEF	= 0x0cef,
-    MACHINE_EBC	= 0x0ebc,
-    MACHINE_AMD64 = 0x8664,
-    MACHINE_M32R = 0x9041,
-    MACHINE_CEE	= 0xc0ee,
-    MACHINE_ARM64 = 0x01c5
+    machine_unknown	= 0,
+    machine_i860 = 0x014d,
+    machine_i386 = 0x014c,
+    machine_r3000 = 0x0162,
+    machine_r4000 = 0x0166,
+    machine_r10000 = 0x0168,
+    machine_wcemipsv2 = 0x0169,
+    machine_alpha = 0x0184,
+    machine_sh3 = 0x01a2,
+    machine_sh3dsp = 0x01a3,
+    machine_sh3e = 0x01a4,
+    machine_sh4 = 0x01a6,
+    machine_sh5 = 0x01a8,
+    machine_arm = 0x01c0,
+    machine_thumb = 0x01c2,
+    machine_armnt = 0x01c4,
+    machine_am33 = 0x01d3,
+    machine_powerpc	= 0x01f0,
+    machine_powerpcfp = 0x01f1,
+    machine_ia64 = 0x0200,
+    machine_mips16 = 0x0266,
+    machine_alpha64	= 0x0284,
+    machine_mipsfpu	= 0x0366,
+    machine_mipsfpu16 = 0x0466,
+    machine_axp64 = machine_alpha64,
+    machine_tricore	= 0x0520,
+    machine_cef	= 0x0cef,
+    machine_ebc	= 0x0ebc,
+    machine_amd64 = 0x8664,
+    machine_m32r = 0x9041,
+    machine_cee	= 0xc0ee,
+    machine_arm64 = 0x01c5
 };
 
 union Characteristics {
@@ -368,6 +368,73 @@ struct ImageThunkData64 {
 struct ImageImportByName {
     uint16_t Hint;
     uint8_t Name[1];
+};
+
+struct ImageRuntimeFunctionEntry {
+    uint32_t BeginAddress;
+    uint32_t EndAddress;
+    union {
+        uint32_t UnwindInfoAddress;
+        uint32_t UnwindData;
+    } DUMMYUNIONNAME;
+};
+
+enum UnwindInfoFlag {
+    UNW_FLAG_NHANDLER = 0,
+    UNW_FLAG_EHANDLER = 1,
+    UNW_FLAG_UHANDLER = 2,
+    UNW_FLAG_CHAININFO = 4
+};
+
+enum UnwindCodeOpCode {
+    UWOP_PUSH_NONVOL = 0,
+    UWOP_ALLOC_LARGE = 1,
+    UWOP_ALLOC_SMALL = 2,
+    UWOP_SET_FPREG = 3,
+    UWOP_SAVE_NONVOL = 4,
+    UWOP_SAVE_NONVOL_FAR = 5,
+    UWOP_EPILOG = 6,
+    UWOP_SPARE_CODE = 7,
+    UWOP_SAVE_XMM128 = 8,
+    UWOP_SAVE_XMM128_FAR = 9,
+    UWOP_PUSH_MACHFRAME = 10,
+};
+
+enum UnwindCodeOpInfo {
+    UWINFO_RAX = 0,
+    UWINFO_RCX,
+    UWINFO_RDX,
+    UWINFO_RBX,
+    UWINFO_RSP,
+    UWINFO_RBP,
+    UWINFO_RSI,
+    UWINFO_RDI,
+    UWINFO_R8,
+    UWINFO_R9,
+    UWINFO_R10,
+    UWINFO_R11,
+    UWINFO_R12,
+    UWINFO_R13,
+    UWINFO_R14,
+    UWINFO_R15,
+};
+
+struct UnwindCode {
+    struct {
+        uint8_t Offset;
+        uint8_t OpCode : 4;
+        uint8_t OpInfo : 4;
+    } u;
+    uint16_t FrameOffset;
+};
+
+struct UnwindInfo {
+    uint8_t Version : 3;
+    uint8_t Flags : 5;
+    uint8_t SizeOfProlog; // size of the function prolog in bytes
+    uint8_t CountOfCodes;
+    uint8_t FrameRegister : 4; // UnwindCodeOpInfo of which register serves as the frame pointer (if non zero)
+    uint8_t FrameOffset : 4; // actual frame pointer = frame pointer value + 16 * this offset
 };
 
 #pragma pack(pop)

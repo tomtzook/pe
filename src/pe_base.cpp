@@ -1,94 +1,94 @@
 
-#include "except.h"
 #include "pe_base.h"
 
 
 namespace pe {
 
-PeHeaders::PeHeaders(const void* base)
-    : m_base(reinterpret_cast<const uint8_t*>(base))
-    , m_dosHeader(reinterpret_cast<const ImageDosHeader*>(base))
-    , m_ntHeaders(reinterpret_cast<const ImageNtHeaders64*>(m_base + m_dosHeader->e_lfanew)) {
-    checkValidHeaders();
+headers::headers(const void* base)
+    : m_base(static_cast<const uint8_t*>(base))
+    , m_dos_header(static_cast<const ImageDosHeader*>(base))
+    , m_nt_headers(reinterpret_cast<const ImageNtHeaders64*>(m_base + m_dos_header->e_lfanew))
+{}
+
+bool headers::is_valid() const {
+    if (IMAGE_DOS_SIGNATURE != m_dos_header->e_magic) {
+        return false;
+    }
+    if (IMAGE_NT_SIGNATURE != m_nt_headers->Signature) {
+        return false;
+    }
+    if (IMAGE_NT_OPTIONAL_HDR64_MAGIC != m_nt_headers->OptionalHeader.Magic) {
+        return false;
+    }
+
+    const auto ch = characteristics();
+    if (ch.bits.LineNumsStripped || ch.bits.LocalSymsStripped || ch.bits.AggressiveWsTrim ||
+        ch.bits.BytesReversedLo || ch.bits.BytesReversedHi) {
+        return false;
+    }
+
+    return true;
 }
 
-const uint8_t* PeHeaders::base() const {
+const uint8_t* headers::base() const {
     return m_base;
 }
 
-size_t PeHeaders::size() const {
-    return m_ntHeaders->OptionalHeader.SizeOfImage;
+size_t headers::size() const {
+    return m_nt_headers->OptionalHeader.SizeOfImage;
 }
 
-MachineType PeHeaders::machineType() const {
-    return static_cast<MachineType>(m_ntHeaders->FileHeader.Machine);
+MachineType headers::machineType() const {
+    return static_cast<MachineType>(m_nt_headers->FileHeader.Machine);
 }
 
-Characteristics PeHeaders::characteristics() const {
-    return Characteristics {.data=m_ntHeaders->FileHeader.Characteristics};
+Characteristics headers::characteristics() const {
+    return Characteristics {.data=m_nt_headers->FileHeader.Characteristics};
 }
 
-Subsystem PeHeaders::subsystem() const {
-    return static_cast<Subsystem>(m_ntHeaders->OptionalHeader.Subsystem);
+Subsystem headers::subsystem() const {
+    return static_cast<Subsystem>(m_nt_headers->OptionalHeader.Subsystem);
 }
 
-DllCharacteristics PeHeaders::dllCharacteristics() const {
-    return DllCharacteristics {.data=m_ntHeaders->OptionalHeader.DllCharacteristics};
+DllCharacteristics headers::dllCharacteristics() const {
+    return DllCharacteristics {.data=m_nt_headers->OptionalHeader.DllCharacteristics};
 }
 
-const ImageDataDirectory* PeHeaders::dataDirectory(DataDirectoryType type) const {
-    if (type >= m_ntHeaders->OptionalHeader.NumberOfRvaAndSizes) {
-        throw DataDirectoryNotPresent(type);
+const ImageDataDirectory* headers::data_directory(DataDirectoryType type) const {
+    if (type >= m_nt_headers->OptionalHeader.NumberOfRvaAndSizes) {
+        return nullptr;
     }
-    if (0 == m_ntHeaders->OptionalHeader.DataDirectory[type].VirtualAddress) {
-        throw DataDirectoryNotPresent(type);
+    if (0 == m_nt_headers->OptionalHeader.DataDirectory[type].VirtualAddress) {
+        return nullptr;
     }
 
-    return m_ntHeaders->OptionalHeader.DataDirectory + type;
+    return m_nt_headers->OptionalHeader.DataDirectory + type;
 }
 
-const ImageSectionHeader* PeHeaders::getSectionHeaders() const {
+const ImageSectionHeader* headers::section_headers() const {
     return reinterpret_cast<const ImageSectionHeader*>(
-            reinterpret_cast<const uint8_t*>(&m_ntHeaders->OptionalHeader)
-            + m_ntHeaders->FileHeader.SizeOfOptionalHeader);
+            reinterpret_cast<const uint8_t*>(&m_nt_headers->OptionalHeader)
+            + m_nt_headers->FileHeader.SizeOfOptionalHeader);
 }
 
-size_t PeHeaders::sectionsCount() const {
-    return m_ntHeaders->FileHeader.NumberOfSections;
+size_t headers::sections_count() const {
+    return m_nt_headers->FileHeader.NumberOfSections;
 }
 
-size_t PeHeaders::sectionAlignment() const {
-    return m_ntHeaders->OptionalHeader.SectionAlignment;
+size_t headers::section_alignment() const {
+    return m_nt_headers->OptionalHeader.SectionAlignment;
 }
 
-bool PeHeaders::hasEntryPoint() const {
-    return 0 != m_ntHeaders->OptionalHeader.AddressOfEntryPoint;
+bool headers::has_entry_point() const {
+    return 0 != m_nt_headers->OptionalHeader.AddressOfEntryPoint;
 }
 
-rva_t PeHeaders::entryPointAddress() const {
-    if (!hasEntryPoint()) {
-        throw NoEntryPointException();
+rva_t headers::entry_point_address() const {
+    if (!has_entry_point()) {
+        return static_cast<rva_t>(-1);
     }
 
-    return m_ntHeaders->OptionalHeader.AddressOfEntryPoint;
-}
-
-void PeHeaders::checkValidHeaders() {
-    if (IMAGE_DOS_SIGNATURE != m_dosHeader->e_magic) {
-        throw BadHeaderException(BadHeaderException::ProblemReason::DOS_MAGIC);
-    }
-    if (IMAGE_NT_SIGNATURE != m_ntHeaders->Signature) {
-        throw BadHeaderException(BadHeaderException::ProblemReason::NT_SIGNATURE);
-    }
-    if (IMAGE_NT_OPTIONAL_HDR64_MAGIC != m_ntHeaders->OptionalHeader.Magic) {
-        throw BadHeaderException(BadHeaderException::ProblemReason::OPTIONAL_HEADER_MAGIC);
-    }
-
-    Characteristics ch = characteristics();
-    if (ch.bits.LineNumsStripped || ch.bits.LocalSymsStripped || ch.bits.AggressiveWsTrim ||
-        ch.bits.BytesReversedLo || ch.bits.BytesReversedHi) {
-        throw BadHeaderException(BadHeaderException::ProblemReason::USE_OF_DEPRECATED_CHARACTERISTIC);
-    }
+    return m_nt_headers->OptionalHeader.AddressOfEntryPoint;
 }
 
 }

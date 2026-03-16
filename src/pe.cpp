@@ -1,85 +1,56 @@
 
-#include <cstring>
-#include "except.h"
 #include "pe.h"
 
 
 namespace pe {
 
-Image::Image(const void* peBuffer)
-    : m_headers(peBuffer)
-    , m_sections(m_headers) {
-    loadSections();
-}
+image::image(const void* buffer)
+    : m_headers(buffer)
+    , m_sections(m_headers)
+{}
 
-const PeHeaders& Image::headers() const {
+const headers& image::headers() const {
     return m_headers;
 }
 
-size_t Image::rvaToOffset(rva_t rva) const {
-    for (const auto& section : sections()) {
-        if (section.containsRva(rva)) {
-            return section.rvaToOffset(rva);
-        }
-    }
-
-    throw RvaNotInImageException(rva);
-}
-
-const ImageSections& Image::sections() const {
+const section_list& image::sections() const {
     return m_sections;
 }
 
-bool Image::hasExportTable() const {
-    return m_exportTable.has_value();
-}
-
-const ExportTable& Image::exportTable() const {
-    if (m_exportTable.has_value()) {
-        return m_exportTable.value();
+export_table image::load_export_table() const {
+    const auto data_directory = m_headers.data_directory(IMAGE_DIRECTORY_ENTRY_EXPORT);
+    if (data_directory == nullptr || !m_sections.contains_rva(data_directory->VirtualAddress)) {
+        return {nullptr, {m_headers, nullptr}};
     }
 
-    throw NoExportTableException();
+    const auto section = m_sections[data_directory->VirtualAddress];
+    const auto directory = section.rva_to_pointer<ImageExportDirectory>(data_directory->VirtualAddress);
+
+    return {directory, section};
 }
 
-bool Image::hasImportTable() const {
-    return m_importTable.has_value();
+import_table image::load_import_table() const {
+    const auto data_directory = m_headers.data_directory(IMAGE_DIRECTORY_ENTRY_IMPORT);
+    if (data_directory == nullptr || !m_sections.contains_rva(data_directory->VirtualAddress)) {
+        return {nullptr, {m_headers, nullptr}};
+    }
+
+    const auto section = m_sections[data_directory->VirtualAddress];
+    const auto directory = section.rva_to_pointer<ImageImportDescriptor>(data_directory->VirtualAddress);
+
+    return {directory, section};
 }
 
-const ImportTable& Image::importTable() const {
-    if (m_importTable.has_value()) {
-        return m_importTable.value();
+functions_table image::load_exception_table() const {
+    const auto data_directory = m_headers.data_directory(IMAGE_DIRECTORY_ENTRY_EXCEPTION);
+    if (data_directory == nullptr || !m_sections.contains_rva(data_directory->VirtualAddress)) {
+        return {nullptr, {m_headers, nullptr}};
     }
 
-    throw NoImportTableException();
-}
+    const auto section = m_sections[data_directory->VirtualAddress];
+    const auto directory = section.rva_to_pointer<ImageRuntimeFunctionEntry>(data_directory->VirtualAddress);
 
-void Image::loadSections() {
-    // load export
-    try {
-        auto exportDataDirectory = m_headers.dataDirectory(IMAGE_DIRECTORY_ENTRY_EXPORT);
-        auto section = m_sections[exportDataDirectory->VirtualAddress];
-        auto exportDirectory = section.rvaToPointer<ImageExportDirectory>(exportDataDirectory->VirtualAddress);
-
-        m_exportTable.emplace(ExportTable(exportDirectory, section));
-    } catch (const DataDirectoryNotPresent&) {
-        // no export section
-    } catch (const RvaNotInImageException&) {
-        // no export section
-    }
-
-    // load import
-    try {
-        auto importDataDirectory = m_headers.dataDirectory(IMAGE_DIRECTORY_ENTRY_IMPORT);
-        auto section = m_sections[importDataDirectory->VirtualAddress];
-        auto importDirectory = section.rvaToPointer<ImageImportDescriptor>(importDataDirectory->VirtualAddress);
-
-        m_importTable.emplace(ImportTable(importDirectory, section));
-    } catch (const DataDirectoryNotPresent&) {
-        // no import section
-    } catch (const RvaNotInImageException&) {
-        // no export section
-    }
+    return {directory, section};
 }
 
 }

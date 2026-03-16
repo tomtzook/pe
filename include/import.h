@@ -1,31 +1,28 @@
 #pragma once
 
 #include "winnt_def.h"
-#include "pe_base.h"
 #include "section.h"
 
 namespace pe {
 
-class ImportedModule {
+class imported_module {
 public:
     class iterator;
 
     struct entry {
-    public:
-        entry(const entry& entry);
-        entry& operator=(const entry& other);
+        entry(const entry& other) = default;
 
-        bool is_ordinal() const;
-        uint16_t ordinal() const;
+        [[nodiscard]] bool is_ordinal() const;
+        [[nodiscard]] uint16_t ordinal() const;
 
-        bool is_name() const;
-        const char* name() const;
+        [[nodiscard]] bool is_name() const;
+        [[nodiscard]] const char* name() const;
 
     private:
-        entry(const ImageThunkData64* thunkData, const Section& section);
+        entry(const ImageThunkData64* thunk_data, const section& section);
 
-        const ImageThunkData64* m_thunkData;
-        const Section& m_section;
+        const ImageThunkData64* m_thunk_data;
+        const section& m_section;
 
         friend iterator;
     };
@@ -37,7 +34,7 @@ public:
         using pointer = entry;
         using iterator_category = std::bidirectional_iterator_tag;
 
-        iterator(const ImageThunkData64* thunkData, const Section& section);
+        iterator(const ImageThunkData64* thunk_data, const section& section);
 
         iterator& operator++();
         iterator& operator--();
@@ -45,38 +42,38 @@ public:
         reference operator*();
         pointer operator->();
 
-        bool operator==(const iterator& rhs);
-        bool operator!=(const iterator& rhs);
+        bool operator==(const iterator& rhs) const;
+        bool operator!=(const iterator& rhs) const;
 
     private:
-        const ImageThunkData64* m_thunkData;
-        const Section& m_section;
+        const ImageThunkData64* m_thunk_data;
+        const section& m_section;
     };
 
-    ImportedModule(const ImageImportDescriptor* descriptor, const Section& section);
+    imported_module(const ImageImportDescriptor* descriptor, const section& section);
 
-    const char* name() const;
+    [[nodiscard]] const char* name() const;
 
-    iterator begin() const;
-    iterator end() const;
+    [[nodiscard]] iterator begin() const;
+    [[nodiscard]] iterator end() const;
 
 private:
-    size_t findLastDataIndex() const;
+    [[nodiscard]] size_t find_last_data_index() const;
 
     const ImageImportDescriptor* m_descriptor;
-    const Section& m_section;
+    const section& m_section;
 };
 
-class ImportTable {
+class import_table {
 public:
     class iterator {
     public:
-        using value_type = ImportedModule;
-        using reference = ImportedModule;
-        using pointer = ImportedModule;
+        using value_type = imported_module;
+        using reference = imported_module;
+        using pointer = imported_module;
         using iterator_category = std::bidirectional_iterator_tag;
 
-        iterator(const ImageImportDescriptor* importDescriptor, const Section& section);
+        iterator(const ImageImportDescriptor* import_descriptor, const section& section);
 
         iterator& operator++();
         iterator& operator--();
@@ -84,24 +81,26 @@ public:
         reference operator*();
         pointer operator->();
 
-        bool operator==(const iterator& rhs);
-        bool operator!=(const iterator& rhs);
+        bool operator==(const iterator& rhs) const;
+        bool operator!=(const iterator& rhs) const;
 
     private:
-        const ImageImportDescriptor* m_importDescriptor;
-        const Section& m_section;
+        const ImageImportDescriptor* m_import_descriptor;
+        const section& m_section;
     };
 
-    ImportTable(const ImageImportDescriptor* importDescriptors, Section section);
+    import_table(const ImageImportDescriptor* import_descriptors, section section);
 
-    iterator begin() const;
-    iterator end() const;
+    [[nodiscard]] bool is_valid() const;
+
+    [[nodiscard]] iterator begin() const;
+    [[nodiscard]] iterator end() const;
 
 private:
-    size_t findLastDataIndex() const;
+    [[nodiscard]] size_t find_last_data_index() const;
 
-    const ImageImportDescriptor* m_importDescriptors;
-    Section m_section;
+    const ImageImportDescriptor* m_import_descriptors;
+    section m_section;
 };
 
 }

@@ -5,92 +5,33 @@
 #include <vector>
 
 #include "pe.h"
-#include "except.h"
-#include "debug.h"
 
 
 int main() {
-    //"/home/tomtzook/vm/shared/jdk-11.0.11_windows-x64_bin.exe";//
-    const char* path = "/home/tomtzook/vm/shared/jdk-11.0.11_windows-x64_bin.exe";//"/home/tomtzook/vm/shared/ntoskrnl.exe";
+    const auto path = "/home/tomtzook/development/projects/hype/cmake-build-debug-clang/bin/hype.efi";
     std::ifstream file(path, std::ios::binary | std::ios::ate);
     file.seekg(0, std::ios::end);
-    size_t fileSize = file.tellg();
+    const size_t file_size = file.tellg();
     file.seekg(0, std::ios::beg);
 
-    std::vector<char> buffer(fileSize);
-    file.read(buffer.data(), fileSize);
+    std::vector<char> buffer(file_size);
+    file.read(buffer.data(), file_size);
 
-    try {
-        pe::Image image(buffer.data());
-        std::cout << image << std::endl;
-
-        for (const auto& module : image.importTable()) {
-            printf("Module: %s\n", module.name());
-            for (const auto& function : module) {
-                printf("\tFunction: ");
-                if (function.is_ordinal()) {
-                    printf("ordinal=0x%x", function.ordinal());
-                } else if (function.is_name()) {
-                    printf("name=%s", function.name());
-                } else {
-                    printf("<n/a>");
-                }
-                printf("\n");
-            }
-        }
-
-        for (const auto& section : image.sections()) {
-            std::cout << section << std::endl;
-        }
-
-        {
-            /*auto exportTable = image.exportTable();
-
-            std::cout << "ADDRESS TABLE" << std::endl;
-            for(const auto& addressEntry : exportTable) {
-                std::cout << " rva=" << addressEntry.rva()
-                          << ", ordinal=" << addressEntry.ordinal()
-                          << ", baised=" << addressEntry.baisedOrdinal()
-                          << ", ptr=" << reinterpret_cast<const void*>(image.rvaToPointer<uint8_t>(addressEntry.rva()));
-                          //<< std::endl;
-
-                try {
-                    auto nameEntry = exportTable.names()[addressEntry.ordinal()];
-                    std::cout << " name=" << nameEntry.name();
-                } catch (const pe::OrdinalNotFoundException& ex) {
-                    // no name for export
-                }
-
-                std::cout << std::endl;
-            }*/
-
-            /*std::cout << "NAME TABLE" << std::endl;
-            for(const auto& aentry : exportTable.names()) {
-                std::cout << " name=" << aentry.name()
-                          << ", ordinal=" << aentry.ordinal()
-                          << ", baised=" << aentry.baisedOrdinal()
-                          << std::endl;
-            }*/
-
-            /*{
-                auto entry = exportTable.names()["ExAllocatePoolWithTag"];
-                pe::rva_t rva = exportTable[entry.ordinal()];
-                auto ptr = image.rvaToPointer<uint8_t>(rva);
-                std::cout << entry << " ptr=" << reinterpret_cast<const void*>(ptr) << std::endl;
-            }
-
-            {
-                pe::export_ordinal_t ordinal = 0xa;
-                pe::rva_t rva = exportTable[ordinal];
-                auto entry = exportTable.names()[ordinal];
-                auto ptr = image.rvaToPointer<uint8_t>(rva);
-                std::cout << entry << " ptr=" << reinterpret_cast<const void*>(ptr) << std::endl;
-            }*/
-        }
-
-    } catch (const pe::BadHeaderException& ex) {
-        printf("Bad Header: %d\n", ex.reason());
+    pe::image image(buffer.data());
+    /*for (const auto& section : image.sections()) {
+        printf("section: %s\n", section.name());
     }
+
+    auto function_table = image.load_exception_table();
+    for (const auto& entry : function_table) {
+        printf("Entry: 0x%x -> 0x%x [0x%x](%s)\n", entry.start(), entry.end(), entry.unwind_info_rva(), image.sections()[entry.unwind_info_rva()].name());
+
+        auto info = pe::unwind_info(image.sections().rva_to_pointer<pe::UnwindInfo>(entry.unwind_info_rva()));
+        do {
+            printf("\tInfo: FR=0x%x FRO=0x%x, codes=%lu\n", info.frame_register(), info.frame_register_offset(), info.codes_count());
+            info = info.next();
+        } while (info.has_next());
+    }*/
 
     return 0;
 }

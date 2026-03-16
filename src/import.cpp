@@ -1,186 +1,145 @@
 
-#include "except.h"
 #include "import.h"
-
 
 namespace pe {
 
-ImportedModule::entry::entry(const entry& entry)
-    : m_thunkData(entry.m_thunkData)
-    , m_section(entry.m_section)
-{}
-
-ImportedModule::entry& ImportedModule::entry::operator=(const entry& other) {
-    m_thunkData = other.m_thunkData;
-    return *this;
+bool imported_module::entry::is_ordinal() const {
+    return m_thunk_data->u1.AddressOfData & IMAGE_ORDINAL_FLAG64;
 }
 
-bool ImportedModule::entry::is_ordinal() const {
-    return m_thunkData->u1.AddressOfData & IMAGE_ORDINAL_FLAG64;
+uint16_t imported_module::entry::ordinal() const {
+    return static_cast<uint16_t>(m_thunk_data->u1.AddressOfData & ~IMAGE_ORDINAL_FLAG64);
 }
 
-uint16_t ImportedModule::entry::ordinal() const {
-    return static_cast<uint16_t>(m_thunkData->u1.AddressOfData & ~IMAGE_ORDINAL_FLAG64);
+bool imported_module::entry::is_name() const {
+    return !is_ordinal() && m_section.contains_rva(m_thunk_data->u1.AddressOfData);
 }
 
-bool ImportedModule::entry::is_name() const {
-    return !is_ordinal() && m_section.containsRva(m_thunkData->u1.AddressOfData);
+const char* imported_module::entry::name() const {
+    const auto import_by_name = m_section.rva_to_pointer<ImageImportByName>(m_thunk_data->u1.AddressOfData);
+    return reinterpret_cast<const char*>(import_by_name->Name);
 }
 
-const char* ImportedModule::entry::name() const {
-    auto importByName = m_section.rvaToPointer<ImageImportByName>(m_thunkData->u1.AddressOfData);
-    return reinterpret_cast<const char*>(importByName->Name);
-}
-
-ImportedModule::entry::entry(const ImageThunkData64* thunkData, const Section& section)
-    : m_thunkData(thunkData)
+imported_module::entry::entry(const ImageThunkData64* thunk_data, const section& section)
+    : m_thunk_data(thunk_data)
     , m_section(section)
 {}
 
-ImportedModule::iterator::iterator(const ImageThunkData64* thunkData, const Section& section)
-    : m_thunkData(thunkData)
+imported_module::iterator::iterator(const ImageThunkData64* thunk_data, const section& section)
+    : m_thunk_data(thunk_data)
     , m_section(section)
 {}
 
-ImportedModule::iterator& ImportedModule::iterator::operator++() {
-    m_thunkData++;
+imported_module::iterator& imported_module::iterator::operator++() {
+    m_thunk_data++;
     return *this;
 }
 
-ImportedModule::iterator& ImportedModule::iterator::operator--() {
-    m_thunkData--;
+imported_module::iterator& imported_module::iterator::operator--() {
+    m_thunk_data--;
     return *this;
 }
 
-ImportedModule::iterator::reference ImportedModule::iterator::operator*() {
-    return {m_thunkData, m_section};
+imported_module::iterator::reference imported_module::iterator::operator*() {
+    return {m_thunk_data, m_section};
 }
 
-ImportedModule::iterator::pointer ImportedModule::iterator::operator->() {
-    return {m_thunkData, m_section};
+imported_module::iterator::pointer imported_module::iterator::operator->() {
+    return {m_thunk_data, m_section};
 }
 
-bool ImportedModule::iterator::operator==(const iterator& rhs) {
-    return m_thunkData == rhs.m_thunkData;
+bool imported_module::iterator::operator==(const iterator& rhs) const {
+    return m_thunk_data == rhs.m_thunk_data;
 }
 
-bool ImportedModule::iterator::operator!=(const iterator& rhs) {
-    return m_thunkData != rhs.m_thunkData;
+bool imported_module::iterator::operator!=(const iterator& rhs) const {
+    return m_thunk_data != rhs.m_thunk_data;
 }
 
-ImportedModule::ImportedModule(const ImageImportDescriptor* descriptor, const Section& section)
+imported_module::imported_module(const ImageImportDescriptor* descriptor, const section& section)
     : m_descriptor(descriptor)
     , m_section(section)
 {}
 
-const char* ImportedModule::name() const {
+const char* imported_module::name() const {
     if (m_descriptor->Name) {
-        return m_section.rvaToPointer<char>(m_descriptor->Name);
+        return m_section.rva_to_pointer<char>(m_descriptor->Name);
     }
 
     return "";
 }
 
-ImportedModule::iterator ImportedModule::begin() const {
-    auto thunkData = m_section.rvaToPointer<ImageThunkData64>(m_descriptor->FirstThunk);
-    return iterator(thunkData, m_section);
+imported_module::iterator imported_module::begin() const {
+    auto thunk_data = m_section.rva_to_pointer<ImageThunkData64>(m_descriptor->FirstThunk);
+    return {thunk_data, m_section};
 }
 
-ImportedModule::iterator ImportedModule::end() const {
-    auto thunkData = m_section.rvaToPointer<ImageThunkData64>(m_descriptor->FirstThunk);
-    return iterator(thunkData + findLastDataIndex(), m_section);
+imported_module::iterator imported_module::end() const {
+    const auto thunk_data = m_section.rva_to_pointer<ImageThunkData64>(m_descriptor->FirstThunk);
+    return {thunk_data + find_last_data_index(), m_section};
 }
 
-size_t ImportedModule::findLastDataIndex() const {
-    auto thunkData = m_section.rvaToPointer<ImageThunkData64>(m_descriptor->FirstThunk);
+size_t imported_module::find_last_data_index() const {
+    const auto thunkData = m_section.rva_to_pointer<ImageThunkData64>(m_descriptor->FirstThunk);
     size_t i = 0;
-    for (; thunkData[i].u1.AddressOfData; i++);
+    for (; thunkData[i].u1.AddressOfData; i++){}
 
     return i;
 }
 
-ImportTable::iterator::iterator(const ImageImportDescriptor* importDescriptor, const Section& section)
-    : m_importDescriptor(importDescriptor)
+import_table::iterator::iterator(const ImageImportDescriptor* import_descriptor, const section& section)
+    : m_import_descriptor(import_descriptor)
     , m_section(section)
 {}
 
-ImportTable::iterator& ImportTable::iterator::operator++() {
-    m_importDescriptor++;
+import_table::iterator& import_table::iterator::operator++() {
+    m_import_descriptor++;
     return *this;
 }
 
-ImportTable::iterator& ImportTable::iterator::operator--() {
-    m_importDescriptor--;
+import_table::iterator& import_table::iterator::operator--() {
+    m_import_descriptor--;
     return *this;
 }
 
-ImportTable::iterator::reference ImportTable::iterator::operator*() {
-    return {m_importDescriptor, m_section};
+import_table::iterator::reference import_table::iterator::operator*() {
+    return {m_import_descriptor, m_section};
 }
 
-ImportTable::iterator::pointer ImportTable::iterator::operator->() {
-    return {m_importDescriptor, m_section};
+import_table::iterator::pointer import_table::iterator::operator->() {
+    return {m_import_descriptor, m_section};
 }
 
-bool ImportTable::iterator::operator==(const iterator& rhs) {
-    return m_importDescriptor == rhs.m_importDescriptor;
+bool import_table::iterator::operator==(const iterator& rhs) const {
+    return m_import_descriptor == rhs.m_import_descriptor;
 }
 
-bool ImportTable::iterator::operator!=(const iterator& rhs) {
-    return m_importDescriptor != rhs.m_importDescriptor;
+bool import_table::iterator::operator!=(const iterator& rhs) const {
+    return m_import_descriptor != rhs.m_import_descriptor;
 }
 
-ImportTable::ImportTable(const ImageImportDescriptor* importDescriptors, Section section)
-    : m_importDescriptors(importDescriptors)
+import_table::import_table(const ImageImportDescriptor* import_descriptors, const section section)
+    : m_import_descriptors(import_descriptors)
     , m_section(section)
 {}
 
-ImportTable::iterator ImportTable::begin() const {
-    return iterator(m_importDescriptors, m_section);
+bool import_table::is_valid() const {
+    return m_import_descriptors != nullptr;
 }
 
-ImportTable::iterator ImportTable::end() const {
-    return iterator(m_importDescriptors + findLastDataIndex(), m_section);
+import_table::iterator import_table::begin() const {
+    return {m_import_descriptors, m_section};
 }
 
-size_t ImportTable::findLastDataIndex() const {
+import_table::iterator import_table::end() const {
+    return {m_import_descriptors + find_last_data_index(), m_section};
+}
+
+size_t import_table::find_last_data_index() const {
     size_t i = 0;
-    for (; m_importDescriptors[i].FirstThunk; i++);
+    for (; m_import_descriptors[i].FirstThunk; i++){}
 
     return i;
 }
 
 }
-/*
- * ImportTable::ImportTable(const void* importDirectoryPtr, const PeHeaders& headers, Section section)
-    : m_section(section) {
-    auto descriptor = reinterpret_cast<const ImageImportDescriptor*>(importDirectoryPtr);
-    for (; descriptor->FirstThunk; descriptor++) {
-        printf("Descriptor:\n");
-        printf("\tFirstThunk=0x%x\n", descriptor->FirstThunk);
-        printf("\tName RVA=0x%x\n", descriptor->Name);
-        if (descriptor->Name) {
-            auto name = section.rvaToPointer<char>(descriptor->Name);
-            printf("\tName=%s\n", name);
-        }
-
-        auto thunkData = section.rvaToPointer<ImageThunkData64>(descriptor->FirstThunk);
-        for (; thunkData->u1.AddressOfData; thunkData++) {
-            auto data = thunkData->u1.AddressOfData;
-            if (data & IMAGE_ORDINAL_FLAG64) {
-                // import by ordinal
-                printf("\t\tOrdinal: 0x%lx\n", (data & ~IMAGE_ORDINAL_FLAG64));
-            } else {
-                // import by name
-                try {
-                    auto importByName = section.rvaToPointer<ImageImportByName>(data);
-                    printf("\t\tName: %s\n", importByName->Name);
-                } catch (const pe::RvaNotInSectionException& ex) {
-                    printf("\t\tName: 0x%x (0x%lx) (0x%x 0x%x)\n",
-                           ex.rva(), data, headers.base(), headers.size());
-                }
-            }
-        }
-    }
-}
- */

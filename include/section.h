@@ -9,38 +9,39 @@
 
 namespace pe {
 
-struct Section {
-public:
-    Section(const PeHeaders& headers, const ImageSectionHeader* header);
+struct section {
+    section(const headers& headers, const ImageSectionHeader* header);
 
-    const char* name() const;
-    size_t alignedVirtualSize() const;
-    SectionCharacteristics characteristics() const;
+    [[nodiscard]] bool is_valid() const;
 
-    bool containsRva(rva_t rva) const;
-    size_t rvaToOffset(rva_t rva) const;
+    [[nodiscard]] const char* name() const;
+    [[nodiscard]] size_t aligned_virtual_size() const;
+    [[nodiscard]] SectionCharacteristics characteristics() const;
+
+    [[nodiscard]] bool contains_rva(rva_t rva) const;
+    [[nodiscard]] size_t rva_to_offset(rva_t rva) const;
 
     template<typename T>
-    const T* rvaToPointer(rva_t rva) const {
-        size_t offset = rvaToOffset(rva);
-        return reinterpret_cast<const T*>(m_headers.base() + offset);
+    const T* rva_to_pointer(const rva_t rva) const {
+        const auto offset = rva_to_offset(rva);
+        return reinterpret_cast<const T*>(m_pe_headers.base() + offset);
     }
 
 private:
-    const PeHeaders& m_headers;
+    const headers& m_pe_headers;
     const ImageSectionHeader* m_header;
 };
 
-class ImageSections {
+class section_list {
 public:
     class iterator {
     public:
-        using value_type = Section;
-        using reference = Section;
-        using pointer = Section;
+        using value_type = section;
+        using reference = section;
+        using pointer = section;
         using iterator_category = std::bidirectional_iterator_tag;
 
-        iterator(const PeHeaders& headers, const ImageSectionHeader* header);
+        iterator(const headers& headers, const ImageSectionHeader* header);
 
         iterator& operator++();
         iterator& operator--();
@@ -48,27 +49,35 @@ public:
         reference operator*();
         pointer operator->();
 
-        bool operator==(const iterator& rhs);
-        bool operator!=(const iterator& rhs);
+        bool operator==(const iterator& rhs) const;
+        bool operator!=(const iterator& rhs) const;
 
     private:
-        const PeHeaders& m_headers;
-        const ImageSectionHeader* m_sectionHeader;
+        const headers& m_pe_headers;
+        const ImageSectionHeader* m_header;
     };
 
-    explicit ImageSections(const PeHeaders& headers);
+    explicit section_list(const headers& headers);
 
-    size_t count() const;
+    [[nodiscard]] size_t count() const;
+    [[nodiscard]] bool contains_rva(rva_t rva) const;
+    [[nodiscard]] size_t rva_to_offset(rva_t rva) const;
 
-    Section operator[](const char* name) const;
-    Section operator[](rva_t rva) const;
+    template<typename T>
+    const T* rva_to_pointer(const rva_t rva) const {
+        const auto offset = rva_to_offset(rva);
+        return reinterpret_cast<const T*>(m_pe_headers.base() + offset);
+    }
 
-    iterator begin() const;
-    iterator end() const;
+    section operator[](const char* name) const;
+    section operator[](rva_t rva) const;
+
+    [[nodiscard]] iterator begin() const;
+    [[nodiscard]] iterator end() const;
 
 private:
-    const PeHeaders& m_headers;
-    const ImageSectionHeader* m_sectionHeaders;
+    const headers& m_pe_headers;
+    const ImageSectionHeader* m_headers;
 };
 
 }

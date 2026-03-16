@@ -1,109 +1,130 @@
 
-#include <cstring>
-
 #include "util.h"
-#include "except.h"
 #include "section.h"
 
 
 namespace pe {
 
-Section::Section(const PeHeaders& headers, const ImageSectionHeader* header)
-    : m_headers(headers)
+section::section(const headers& headers, const ImageSectionHeader* header)
+    : m_pe_headers(headers)
     , m_header(header)
 {}
 
-const char* Section::name() const {
+bool section::is_valid() const {
+    return m_header != nullptr;
+}
+
+const char* section::name() const {
     return reinterpret_cast<const char*>(m_header->Name);
 }
 
-size_t Section::alignedVirtualSize() const {
+size_t section::aligned_virtual_size() const {
     if (0 != m_header->Misc.VirtualSize) {
-        return roundUp(static_cast<size_t>(m_header->Misc.VirtualSize), m_headers.sectionAlignment());
+        return round_up(static_cast<size_t>(m_header->Misc.VirtualSize), m_pe_headers.section_alignment());
     }
 
-    return roundUp(static_cast<size_t>(m_header->SizeOfRawData), m_headers.sectionAlignment());
+    return round_up(static_cast<size_t>(m_header->SizeOfRawData), m_pe_headers.section_alignment());
 }
 
-SectionCharacteristics Section::characteristics() const {
+SectionCharacteristics section::characteristics() const {
     return SectionCharacteristics {.data=m_header->Characteristics};
 }
 
-bool Section::containsRva(rva_t rva) const {
+bool section::contains_rva(const rva_t rva) const {
     return rva >= m_header->VirtualAddress &&
-        rva <= m_header->VirtualAddress + alignedVirtualSize();
+        rva <= m_header->VirtualAddress + aligned_virtual_size();
 }
 
-size_t Section::rvaToOffset(rva_t rva) const {
-    if (!containsRva(rva)) {
-        throw RvaNotInSectionException(*this, rva);
+size_t section::rva_to_offset(const rva_t rva) const {
+    if (!contains_rva(rva)) {
+        return static_cast<size_t>(-1);
     }
 
     return m_header->PointerToRawData + rva - m_header->VirtualAddress;
 }
 
-ImageSections::iterator::iterator(const PeHeaders& headers, const ImageSectionHeader* header)
-        : m_headers(headers)
-        , m_sectionHeader(header)
+section_list::iterator::iterator(const headers& headers, const ImageSectionHeader* header)
+        : m_pe_headers(headers)
+        , m_header(header)
 {}
 
-ImageSections::iterator& ImageSections::iterator::operator++() {
-    m_sectionHeader++;
+section_list::iterator& section_list::iterator::operator++() {
+    m_header++;
     return *this;
 }
-ImageSections::iterator& ImageSections::iterator::operator--() {
-    m_sectionHeader--;
+section_list::iterator& section_list::iterator::operator--() {
+    m_header--;
     return *this;
 }
 
-ImageSections::iterator::reference ImageSections::iterator::operator*() {
-    return {m_headers, m_sectionHeader};
+section_list::iterator::reference section_list::iterator::operator*() {
+    return {m_pe_headers, m_header};
 }
-ImageSections::iterator::pointer ImageSections::iterator::operator->() {
-    return {m_headers, m_sectionHeader};
-}
-
-bool ImageSections::iterator::operator==(const iterator& rhs) {
-    return m_sectionHeader == rhs.m_sectionHeader;
-}
-bool ImageSections::iterator::operator!=(const iterator& rhs) {
-    return m_sectionHeader != rhs.m_sectionHeader;
+section_list::iterator::pointer section_list::iterator::operator->() {
+    return {m_pe_headers, m_header};
 }
 
-ImageSections::ImageSections(const PeHeaders& headers)
-        : m_headers(headers)
-        , m_sectionHeaders(m_headers.getSectionHeaders())
+bool section_list::iterator::operator==(const iterator& rhs) const {
+    return m_header == rhs.m_header;
+}
+bool section_list::iterator::operator!=(const iterator& rhs) const {
+    return m_header != rhs.m_header;
+}
+
+section_list::section_list(const headers& headers)
+        : m_pe_headers(headers)
+        , m_headers(m_pe_headers.section_headers())
 {}
 
-size_t ImageSections::count() const {
-    return m_headers.sectionsCount();
+size_t section_list::count() const {
+    return m_pe_headers.sections_count();
 }
 
-Section ImageSections::operator[](const char* name) const {
-    for(const auto& section : *this) {
-        if (0 == strcmp(name, section.name())) {
+bool section_list::contains_rva(const rva_t rva) const {
+    for (const auto& section : *this) {
+        if (section.contains_rva(rva)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+size_t section_list::rva_to_offset(const rva_t rva) const {
+    for (const auto& section : *this) {
+        if (section.contains_rva(rva)) {
+            return section.rva_to_offset(rva);
+        }
+    }
+
+    return false;
+}
+
+section section_list::operator[](const char* name) const {
+    for (const auto& section : *this) {
+        if (0 == __builtin_strcmp(name, section.name())) {
             return section;
         }
     }
 
-    throw SectionNotFoundException(name);
+    return {m_pe_headers, nullptr};
 }
 
-Section ImageSections::operator[](rva_t rva) const {
+section section_list::operator[](const rva_t rva) const {
     for(const auto& section : *this) {
-        if (section.containsRva(rva)) {
+        if (section.contains_rva(rva)) {
             return section;
         }
     }
 
-    throw RvaNotInImageException(rva);
+    return {m_pe_headers, nullptr};
 }
 
-ImageSections::iterator ImageSections::begin() const {
-    return iterator(m_headers, m_sectionHeaders);
+section_list::iterator section_list::begin() const {
+    return {m_pe_headers, m_headers};
 }
-ImageSections::iterator ImageSections::end() const {
-    return iterator(m_headers, m_sectionHeaders + count());
+section_list::iterator section_list::end() const {
+    return {m_pe_headers, m_headers + count()};
 }
 
 }
