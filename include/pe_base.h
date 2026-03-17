@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstddef>
 #include "winnt_def.h"
 
 namespace pe {
