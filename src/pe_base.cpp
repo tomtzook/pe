@@ -54,7 +54,7 @@ DllCharacteristics headers::dllCharacteristics() const {
     return DllCharacteristics {.data=m_nt_headers->OptionalHeader.DllCharacteristics};
 }
 
-const ImageDataDirectory* headers::data_directory(DataDirectoryType type) const {
+const ImageDataDirectory* headers::data_directory(const DataDirectoryType type) const {
     if (type >= m_nt_headers->OptionalHeader.NumberOfRvaAndSizes) {
         return nullptr;
     }

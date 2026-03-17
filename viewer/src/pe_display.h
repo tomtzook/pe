@@ -85,6 +85,11 @@ public:
 
 private:
     [[nodiscard]] tree_node load_info_tree() const;
+    [[nodiscard]] tree_node load_sections() const;
+    [[nodiscard]] tree_node load_data_directories() const;
+    [[nodiscard]] tree_node load_exports() const;
+    [[nodiscard]] tree_node load_imports() const;
+    [[nodiscard]] tree_node load_exceptions() const;
 
     std::string m_path;
     std::string m_name;

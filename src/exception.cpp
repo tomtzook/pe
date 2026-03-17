@@ -45,6 +45,10 @@ bool unwind_info::has_next() const {
 }
 
 unwind_info unwind_info::next() const {
+    if (!has_next()) {
+        return unwind_info(nullptr);
+    }
+
     const auto* after = reinterpret_cast<const uint8_t*>(m_info) + sizeof(UnwindInfo) + (sizeof(UnwindCode) * m_info->CountOfCodes);
     return unwind_info{reinterpret_cast<const UnwindInfo*>(after)};
 }

@@ -40,15 +40,38 @@ static std::vector<char> load_file(const std::string& path) {
 }
 
 static std::string get_filename(const std::string& path) {
-    const auto last_dot_pos = path.find_last_of('.');
+    const auto last_dot_pos = path.find_last_of('/');
     if (last_dot_pos == std::string::npos || last_dot_pos == 0) {
         return path;
     }
 
-    return path.substr(0, last_dot_pos);
+    return path.substr(last_dot_pos + 1);
 }
 
-static const char* frame_register_str(uint32_t frame_register) {
+static const char* data_directory_type_str(const pe::DataDirectoryType type) {
+    switch (type) {
+        case pe::IMAGE_DIRECTORY_ENTRY_EXPORT: return "Export";
+        case pe::IMAGE_DIRECTORY_ENTRY_IMPORT: return "Import";
+        case pe::IMAGE_DIRECTORY_ENTRY_RESOURCE: return "Resource";
+        case pe::IMAGE_DIRECTORY_ENTRY_EXCEPTION: return "Exception";
+        case pe::IMAGE_DIRECTORY_ENTRY_SECURITY: return "Security";
+        case pe::IMAGE_DIRECTORY_ENTRY_BASERELOC: return "BaseReloc";
+        case pe::IMAGE_DIRECTORY_ENTRY_DEBUG: return "Debug";
+        case pe::IMAGE_DIRECTORY_ENTRY_COPYRIGHT: return "Copyright";
+        case pe::IMAGE_DIRECTORY_ENTRY_GLOBALPTR: return "GlobalPtr";
+        case pe::IMAGE_DIRECTORY_ENTRY_TLS: return "Tls";
+        case pe::IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG: return "LoadConfig";
+        case pe::IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT: return "BoundImport";
+        case pe::IMAGE_DIRECTORY_ENTRY_IAT: return "IAT";
+        case pe::IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT: return "DelayImport";
+        case pe::IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR: return "ComDescriptor";
+        case pe::IMAGE_DIRECTORY_MAX:
+        default:
+            return "";
+    }
+}
+
+static const char* frame_register_str(const uint32_t frame_register) {
     switch (static_cast<pe::UnwindCodeOpInfo>(frame_register)) {
         case pe::UWINFO_RAX: return "rax";
         case pe::UWINFO_RCX: return "rcx";
@@ -150,7 +173,7 @@ void tree_leaf::draw() const {
             ImGui::Text("%d", get_value_int());
             break;
         case type::uinteger:
-            ImGui::Text("%u", get_value_uint());
+            ImGui::Text("0x%x", get_value_uint());
             break;
         case type::floating:
             ImGui::Text("%.3f", get_value_float());
@@ -165,7 +188,7 @@ void tree_leaf::draw() const {
 }
 
 tree_node::tree_node()
-    : m_name("")
+    : m_name()
     , m_children()
     , m_leafs()
 {}
@@ -262,7 +285,7 @@ std::string_view pe_display::get_name() const {
 
 void pe_display::display() const {
     ImGui::Begin(m_name.c_str());
-    if (ImGui::BeginTable("Info", 3, ImGuiTableFlags_Borders)) {
+    if (ImGui::BeginTable("Info", 2, ImGuiTableFlags_Borders)) {
         ImGui::TableSetupColumn("name", ImGuiTableColumnFlags_None);
         ImGui::TableSetupColumn("value", ImGuiTableColumnFlags_None);
         ImGui::TableHeadersRow();
@@ -277,11 +300,11 @@ void pe_display::display() const {
 }
 
 tree_node pe_display::load_info_tree() const {
-    tree_node root("root");
+    tree_node root(m_name);
 
     {
         const auto characteristics = m_image.headers().characteristics();
-        tree_node node("characteristics");
+        tree_node node("Characteristics");
         node.add_leaf_bool("RelocsStripped", characteristics.bits.RelocsStripped);
         node.add_leaf_bool("ExecutableImage", characteristics.bits.ExecutableImage);
         node.add_leaf_bool("LineNumsStripped", characteristics.bits.LineNumsStripped);
@@ -303,7 +326,7 @@ tree_node pe_display::load_info_tree() const {
 
     {
         const auto characteristics = m_image.headers().dllCharacteristics();
-        tree_node node("dll-characteristics");
+        tree_node node("DllCharacteristics");
         node.add_leaf_bool("HighEntropyVa", characteristics.bits.HighEntropyVa);
         node.add_leaf_bool("DynamicBase", characteristics.bits.DynamicBase);
         node.add_leaf_bool("ForceIntegrity", characteristics.bits.ForceIntegrity);
@@ -319,110 +342,157 @@ tree_node pe_display::load_info_tree() const {
         root.add_child(std::move(node));
     }
 
-    {
-        tree_node sections_root("sections");
-        for (const auto& section : m_image.sections()) {
-            tree_node section_node(section.name());
-            section_node.add_leaf_uint("VirtualAddress", section.virtual_address());
-            section_node.add_leaf_uint("VirtualSize", section.virtual_size());
-            section_node.add_leaf_uint("PointerToRawData", section.pointer_to_raw_data());
-            section_node.add_leaf_uint("SizeOfRawData", section.size_of_raw_data());
+    root.add_child(load_sections());
+    root.add_child(load_data_directories());
+    root.add_child(load_exports());
+    root.add_child(load_imports());
+    root.add_child(load_exceptions());
 
-            {
-                const auto characteristics = section.characteristics();
-                tree_node node("characteristics");
-                node.add_leaf_bool("typeNoPad", characteristics.bits.typeNoPad);
-                node.add_leaf_bool("cntCode", characteristics.bits.cntCode);
-                node.add_leaf_bool("cntInitializedData", characteristics.bits.cntInitializedData);
-                node.add_leaf_bool("cntUnInitializedData", characteristics.bits.cntUnInitializedData);
-                node.add_leaf_bool("lnkOther", characteristics.bits.lnkOther);
-                node.add_leaf_bool("lnkiNFO", characteristics.bits.lnkiNFO);
-                node.add_leaf_bool("lnkRemove", characteristics.bits.lnkRemove);
-                node.add_leaf_bool("lnkComdat", characteristics.bits.lnkComdat);
-                node.add_leaf_bool("gprel", characteristics.bits.gprel);
-                node.add_leaf_uint("alignment", characteristics.bits.alignment); //todo: string of SectionCharacteristicsAlignment
-                node.add_leaf_bool("lnkNrelocOvfl", characteristics.bits.lnkNrelocOvfl);
-                node.add_leaf_bool("memDiscardable", characteristics.bits.memDiscardable);
-                node.add_leaf_bool("memNotCached", characteristics.bits.memNotCached);
-                node.add_leaf_bool("memNotPaged", characteristics.bits.memNotPaged);
-                node.add_leaf_bool("memShared", characteristics.bits.memShared);
-                node.add_leaf_bool("memExecute", characteristics.bits.memExecute);
-                node.add_leaf_bool("memRead", characteristics.bits.memRead);
-                node.add_leaf_bool("memWrite", characteristics.bits.memWrite);
+    return std::move(root);
+}
 
-                section_node.add_child(std::move(node));
-            }
+tree_node pe_display::load_sections() const {
+    tree_node root("Sections");
+    for (const auto& section : m_image.sections()) {
+        tree_node section_node(section.name());
+        section_node.add_leaf_uint("VirtualAddress", section.virtual_address());
+        section_node.add_leaf_uint("VirtualSize", section.virtual_size());
+        section_node.add_leaf_uint("PointerToRawData", section.pointer_to_raw_data());
+        section_node.add_leaf_uint("SizeOfRawData", section.size_of_raw_data());
 
-            sections_root.add_child(std::move(section_node));
+        {
+            const auto characteristics = section.characteristics();
+            tree_node node("Characteristics");
+            node.add_leaf_bool("TypeNoPad", characteristics.bits.typeNoPad);
+            node.add_leaf_bool("CntCode", characteristics.bits.cntCode);
+            node.add_leaf_bool("CntInitializedData", characteristics.bits.cntInitializedData);
+            node.add_leaf_bool("CntUnInitializedData", characteristics.bits.cntUnInitializedData);
+            node.add_leaf_bool("LnkOther", characteristics.bits.lnkOther);
+            node.add_leaf_bool("LnkiNFO", characteristics.bits.lnkiNFO);
+            node.add_leaf_bool("LnkRemove", characteristics.bits.lnkRemove);
+            node.add_leaf_bool("LnkComdat", characteristics.bits.lnkComdat);
+            node.add_leaf_bool("Gprel", characteristics.bits.gprel);
+            node.add_leaf_uint("Alignment", characteristics.bits.alignment); //todo: string of SectionCharacteristicsAlignment
+            node.add_leaf_bool("LnkNrelocOvfl", characteristics.bits.lnkNrelocOvfl);
+            node.add_leaf_bool("MemDiscardable", characteristics.bits.memDiscardable);
+            node.add_leaf_bool("MemNotCached", characteristics.bits.memNotCached);
+            node.add_leaf_bool("MemNotPaged", characteristics.bits.memNotPaged);
+            node.add_leaf_bool("MemShared", characteristics.bits.memShared);
+            node.add_leaf_bool("MemExecute", characteristics.bits.memExecute);
+            node.add_leaf_bool("MemRead", characteristics.bits.memRead);
+            node.add_leaf_bool("MemWrite", characteristics.bits.memWrite);
+
+            section_node.add_child(std::move(node));
         }
 
-        root.add_child(std::move(sections_root));
+        root.add_child(std::move(section_node));
     }
 
-    if (const auto export_table = m_image.load_export_table(); export_table.is_valid()) {
-        const auto export_names = export_table.names();
-        tree_node export_root("exports");
-        for (const auto& entry : export_table) {
-            tree_node node;
+    return std::move(root);
+}
 
-            node.add_leaf_uint("rva", entry.rva());
-            node.add_leaf_uint("ordinal", entry.ordinal());
+tree_node pe_display::load_data_directories() const {
+    tree_node root("DataDirectories");
 
-            if (const auto name_entry = export_names[entry.ordinal()]; name_entry.is_valid()) {
-                node.set_name(name_entry.name());
-                node.add_leaf_str("name", name_entry.name());
-            } else {
-                node.set_name(std::format("{}", entry.ordinal()));
-            }
+    for (auto type = pe::DataDirectoryType::IMAGE_DIRECTORY_ENTRY_EXPORT;
+        type < pe::DataDirectoryType::IMAGE_DIRECTORY_MAX;
+        type = static_cast<pe::DataDirectoryType>(static_cast<uint32_t>(type) + 1)) {
+        tree_node node(data_directory_type_str(type));
+
+        const auto directory = m_image.headers().data_directory(type);
+        if (directory == nullptr) {
+            continue;
         }
 
-        root.add_child(std::move(export_root));
+        node.add_leaf_uint("VirtualAddress", directory->VirtualAddress);
+        node.add_leaf_uint("Size", directory->Size);
+
+        root.add_child(std::move(node));
     }
 
-    if (const auto import_table = m_image.load_import_table(); import_table.is_valid()) {
-        tree_node import_root("imports");
-        for (const auto& module : import_table) {
-            tree_node module_node(module.name());
+    return std::move(root);
+}
 
-            for (const auto& entry : module) {
-                tree_node entry_node(entry.name());
-                entry_node.add_leaf_uint("ordinal", entry.ordinal());
+tree_node pe_display::load_exports() const {
+    tree_node root("Exports");
+    const auto export_table = m_image.load_export_table();
+    if (!export_table.is_valid()) {
+        return std::move(root);
+    }
 
-                module_node.add_child(std::move(entry_node));
-            }
+    const auto export_names = export_table.names();
+    for (const auto& entry : export_table) {
+        tree_node node;
 
-            import_root.add_child(std::move(module_node));
+        node.add_leaf_uint("Rva", entry.rva());
+        node.add_leaf_uint("Ordinal", entry.ordinal());
+
+        if (const auto name_entry = export_names[entry.ordinal()]; name_entry.is_valid()) {
+            node.set_name(name_entry.name());
+        } else {
+            node.set_name(std::format("0x{:x}", entry.ordinal()));
+        }
+    }
+
+    return std::move(root);
+}
+
+tree_node pe_display::load_imports() const {
+    tree_node root("Imports");
+    const auto import_table = m_image.load_import_table();
+    if (!import_table.is_valid()) {
+        return std::move(root);
+    }
+
+    for (const auto& module : import_table) {
+        tree_node module_node(module.name());
+
+        for (const auto& entry : module) {
+            tree_node entry_node(entry.name());
+            entry_node.add_leaf_uint("Ordinal", entry.ordinal());
+
+            module_node.add_child(std::move(entry_node));
         }
 
-        root.add_child(std::move(import_root));
+        root.add_child(std::move(module_node));
     }
 
-    if (const auto exception_table = m_image.load_exception_table(); exception_table.is_valid()) {
-        tree_node exceptions_root("exceptions");
+    return std::move(root);
+}
 
-        for (const auto& entry : exception_table) {
-            tree_node entry_node(std::format("{} -> {}", entry.start(), entry.end()));
+tree_node pe_display::load_exceptions() const {
+    tree_node root("Exceptions");
+    const auto exception_table = m_image.load_exception_table();
+    if (!exception_table.is_valid()) {
+        return std::move(root);
+    }
 
-            entry_node.add_leaf_uint("Start", entry.start());
-            entry_node.add_leaf_uint("End", entry.end());
-            entry_node.add_leaf_uint("UnwindInfoRva", entry.unwind_info_rva());
+    for (const auto& entry : exception_table) {
+        tree_node entry_node(std::format("0x{:x} -> 0x{:x}", entry.start(), entry.end()));
 
-            if (const auto unwind_info = entry.find_unwind_info(m_image.sections());
-                unwind_info.is_valid()) {
-                // todo: handle chained!
-                tree_node unwind_node("UnwindInfo");
+        entry_node.add_leaf_uint("StartRva", entry.start());
+        entry_node.add_leaf_uint("EndRva", entry.end());
+        entry_node.add_leaf_uint("UnwindInfoRva", entry.unwind_info_rva());
+
+        if (auto unwind_info = entry.find_unwind_info(m_image.sections());
+            unwind_info.is_valid()) {
+            int index = 0;
+            do {
+                const auto name = index > 0 ? std::format("UnwindInfo {}", index + 1) : "UnwindInfo";
+                tree_node unwind_node(name);
+
                 unwind_node.add_leaf_uint("Flags", unwind_info.flags());
                 unwind_node.add_leaf_uint("PrologSize", unwind_info.prolog_size());
                 unwind_node.add_leaf_str("FrameRegister", frame_register_str(unwind_info.frame_register()));
                 unwind_node.add_leaf_uint("FrameRegisterOffset", unwind_info.frame_register_offset() * 16);
-
                 entry_node.add_child(std::move(unwind_node));
-            }
 
-            exceptions_root.add_child(std::move(entry_node));
+                unwind_info = unwind_info.next();
+                index++;
+            } while (unwind_info.is_valid());
         }
 
-        root.add_child(std::move(exceptions_root));
+        root.add_child(std::move(entry_node));
     }
 
     return std::move(root);
