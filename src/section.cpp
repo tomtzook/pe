@@ -18,6 +18,14 @@ const char* section::name() const {
     return reinterpret_cast<const char*>(m_header->Name);
 }
 
+uint32_t section::virtual_address() const {
+    return m_header->VirtualAddress;
+}
+
+size_t section::virtual_size() const {
+    return m_header->Misc.VirtualSize;
+}
+
 size_t section::aligned_virtual_size() const {
     if (0 != m_header->Misc.VirtualSize) {
         return round_up(static_cast<size_t>(m_header->Misc.VirtualSize), m_pe_headers.section_alignment());
@@ -26,13 +34,21 @@ size_t section::aligned_virtual_size() const {
     return round_up(static_cast<size_t>(m_header->SizeOfRawData), m_pe_headers.section_alignment());
 }
 
+uint32_t section::pointer_to_raw_data() const {
+    return m_header->PointerToRawData;
+}
+
+size_t section::size_of_raw_data() const {
+    return m_header->PointerToRawData;
+}
+
 SectionCharacteristics section::characteristics() const {
     return SectionCharacteristics {.data=m_header->Characteristics};
 }
 
 bool section::contains_rva(const rva_t rva) const {
     return rva >= m_header->VirtualAddress &&
-        rva <= m_header->VirtualAddress + aligned_virtual_size();
+        rva <= m_header->VirtualAddress + virtual_size();
 }
 
 size_t section::rva_to_offset(const rva_t rva) const {

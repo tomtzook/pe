@@ -16,7 +16,11 @@ struct section {
     [[nodiscard]] bool is_valid() const;
 
     [[nodiscard]] const char* name() const;
+    [[nodiscard]] uint32_t virtual_address() const;
+    [[nodiscard]] size_t virtual_size() const;
     [[nodiscard]] size_t aligned_virtual_size() const;
+    [[nodiscard]] uint32_t pointer_to_raw_data() const;
+    [[nodiscard]] size_t size_of_raw_data() const;
     [[nodiscard]] SectionCharacteristics characteristics() const;
 
     [[nodiscard]] bool contains_rva(rva_t rva) const;
