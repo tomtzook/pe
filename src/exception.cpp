@@ -6,7 +6,11 @@ namespace pe {
 unwind_info::unwind_info(const UnwindInfo* info)
     : m_info(info)
 {}
-    
+
+bool unwind_info::is_valid() const {
+    return m_info != nullptr;
+}
+
 bool unwind_info::has_flag(const uint16_t flag) const {
     return (m_info->Flags & flag) != 0;
 }

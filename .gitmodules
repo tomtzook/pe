@@ -1,0 +1,6 @@
+[submodule "viewer/libs/imgui"]
+	path = viewer/libs/imgui
+	url = git@github.com:ocornut/imgui.git
+[submodule "viewer/libs/ImGuiFileDialog"]
+	path = viewer/libs/ImGuiFileDialog
+	url = git@github.com:aiekick/ImGuiFileDialog.git

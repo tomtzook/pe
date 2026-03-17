@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.17)
 project(pe)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 set(COMPILE_DEFS )
 if (DEFINED PE_NO_STD)
@@ -14,9 +14,7 @@ add_library(pe STATIC
         src/export.cpp
         src/pe_base.cpp
         src/import.cpp
-        include/exception.h
         src/exception.cpp
-        include/debug.h
         src/debug.cpp)
 target_include_directories(pe
         PUBLIC
@@ -25,4 +23,12 @@ target_include_directories(pe
         ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_compile_definitions(pe PUBLIC ${COMPILE_DEPS})
 target_compile_options(pe PRIVATE -fno-exceptions)
-target_link_options(pe PRIVATE -nostdlib -nolibc -nodefaultlibs)
+#target_link_options(pe PRIVATE -nostdlib -nolibc -nodefaultlibs)
+
+add_executable(pe_test test.cpp)
+target_include_directories(pe_test PRIVATE include)
+target_link_libraries(pe_test pe)
+
+if (DEFINED PE_VIEWER)
+    add_subdirectory(viewer)
+endif ()

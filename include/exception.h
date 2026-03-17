@@ -13,6 +13,7 @@ class unwind_info {
 public:
     explicit unwind_info(const UnwindInfo* info);
 
+    [[nodiscard]] bool is_valid() const;
     [[nodiscard]] bool has_flag(uint16_t flag) const;
     [[nodiscard]] uint16_t flags() const;
     [[nodiscard]] size_t prolog_size() const;

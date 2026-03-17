@@ -2,6 +2,7 @@
 
 #ifndef PE_NO_STD
 #include <cstdint>
+#include <cstddef>
 #endif
 
 
