@@ -1,6 +1,8 @@
 #pragma once
 
+#ifndef PE_NO_STD
 #include <iterator>
+#endif
 
 #include "winnt_def.h"
 #include "section.h"
@@ -39,7 +41,10 @@ public:
         using value_type = entry;
         using reference = entry;
         using pointer = entry;
+
+#ifndef PE_NO_STD
         using iterator_category = std::bidirectional_iterator_tag;
+#endif
 
         iterator(const ImageExportDirectory* directory, const section& section,
                  const rva_t* name_pointer_ptr, const export_ordinal_t* ordinal_table_ptr);
@@ -103,7 +108,10 @@ public:
         using value_type = entry;
         using reference = entry;
         using pointer = entry;
+
+#ifndef PE_NO_STD
         using iterator_category = std::bidirectional_iterator_tag;
+#endif
 
         iterator(const ImageExportDirectory* directory, const section& section, const rva_t* name_pointer_ptr, export_ordinal_t current_ordinal);
 

@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef PE_NO_STD
+#include <iterator>
+#endif
+
 #include "winnt_def.h"
 #include "section.h"
 
@@ -45,7 +49,10 @@ public:
         using value_type = function_entry;
         using reference = function_entry;
         using pointer = function_entry;
+
+#ifndef PE_NO_STD
         using iterator_category = std::bidirectional_iterator_tag;
+#endif
 
         iterator(const ImageRuntimeFunctionEntry* function_entry, const section& section);
 

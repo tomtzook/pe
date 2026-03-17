@@ -1,7 +1,8 @@
 #pragma once
 
-#include <cstddef>
+#ifndef PE_NO_STD
 #include <iterator>
+#endif
 
 #include "winnt_def.h"
 #include "pe_base.h"
@@ -39,7 +40,11 @@ public:
         using value_type = section;
         using reference = section;
         using pointer = section;
+
+#ifndef PE_NO_STD
         using iterator_category = std::bidirectional_iterator_tag;
+#endif
+
 
         iterator(const headers& headers, const ImageSectionHeader* header);
 

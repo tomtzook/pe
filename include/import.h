@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef PE_NO_STD
+#include <iterator>
+#endif
+
 #include "winnt_def.h"
 #include "section.h"
 
@@ -32,7 +36,10 @@ public:
         using value_type = entry;
         using reference = entry;
         using pointer = entry;
+
+#ifndef PE_NO_STD
         using iterator_category = std::bidirectional_iterator_tag;
+#endif
 
         iterator(const ImageThunkData64* thunk_data, const section& section);
 
@@ -71,7 +78,10 @@ public:
         using value_type = imported_module;
         using reference = imported_module;
         using pointer = imported_module;
+
+#ifndef PE_NO_STD
         using iterator_category = std::bidirectional_iterator_tag;
+#endif
 
         iterator(const ImageImportDescriptor* import_descriptor, const section& section);
 

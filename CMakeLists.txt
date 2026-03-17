@@ -3,6 +3,11 @@ project(pe)
 
 set(CMAKE_CXX_STANDARD 17)
 
+set(COMPILE_DEFS )
+if (DEFINED PE_NO_STD)
+    set(COMPILE_DEPS ${COMPILE_DEPS} PE_NO_STD=1)
+endif ()
+
 add_library(pe STATIC
         src/pe.cpp
         src/section.cpp
@@ -10,9 +15,14 @@ add_library(pe STATIC
         src/pe_base.cpp
         src/import.cpp
         include/exception.h
-        src/exception.cpp)
-target_include_directories(pe PRIVATE include)
-
-add_executable(pe_test test.cpp)
-target_include_directories(pe_test PRIVATE include)
-target_link_libraries(pe_test pe)
+        src/exception.cpp
+        include/debug.h
+        src/debug.cpp)
+target_include_directories(pe
+        PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_compile_definitions(pe PUBLIC ${COMPILE_DEPS})
+target_compile_options(pe PRIVATE -fno-exceptions)
+target_link_options(pe PRIVATE -nostdlib -nolibc -nodefaultlibs)

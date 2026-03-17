@@ -1,9 +1,30 @@
 #pragma once
 
+#ifndef PE_NO_STD
 #include <cstdint>
+#endif
 
 
 namespace pe {
+
+#ifdef PE_NO_STD
+typedef signed char int8_t;
+typedef signed short int16_t;
+typedef signed int int32_t;
+typedef signed long int64_t;
+typedef int64_t intn_t;
+typedef int64_t intptr_t;
+typedef long int intmax_t;
+
+typedef unsigned char uint8_t;
+typedef unsigned short uint16_t;
+typedef unsigned int uint32_t;
+typedef unsigned long long uint64_t;
+typedef uint64_t uintn_t;
+typedef uint64_t uintptr_t;
+typedef unsigned long int uintmax_t;
+#endif
+
 
 constexpr uint16_t IMAGE_DOS_SIGNATURE = 0x5A4D; /* MZ */
 constexpr uint32_t IMAGE_NT_SIGNATURE = 0x4550; /* PE */
@@ -435,6 +456,49 @@ struct UnwindInfo {
     uint8_t CountOfCodes;
     uint8_t FrameRegister : 4; // UnwindCodeOpInfo of which register serves as the frame pointer (if non zero)
     uint8_t FrameOffset : 4; // actual frame pointer = frame pointer value + 16 * this offset
+};
+
+enum DebugType {
+    IMAGE_DEBUG_TYPE_UNKNOWN = 0,
+    IMAGE_DEBUG_TYPE_COFF = 1,
+    IMAGE_DEBUG_TYPE_CODEVIEW = 2,
+    IMAGE_DEBUG_TYPE_FPO = 3,
+    IMAGE_DEBUG_TYPE_MISC = 4,
+    IMAGE_DEBUG_TYPE_EXCEPTION = 5,
+    IMAGE_DEBUG_TYPE_FIXUP = 6,
+    IMAGE_DEBUG_TYPE_OMAP_TO_SRC = 7,
+    IMAGE_DEBUG_TYPE_OMAP_FROM_SRC = 8,
+    IMAGE_DEBUG_TYPE_BORLAND = 9,
+    IMAGE_DEBUG_TYPE_RESERVED10 = 10,
+    IMAGE_DEBUG_TYPE_CLSID = 11,
+    IMAGE_DEBUG_TYPE_REPRO = 16,
+    IMAGE_DEBUG_TYPE_UNDEFINED1 = 17,
+    IMAGE_DEBUG_TYPE_UNDEFINED2 = 18,
+    IMAGE_DEBUG_TYPE_EX_DLLCHARACTERISTICS = 20,
+};
+
+struct ImageDebugDirectory {
+    uint32_t Characteristics;
+    uint32_t TimeDateStamp;
+    uint16_t MajorVersion;
+    uint16_t MinorVersion;
+    uint32_t Type;
+    uint32_t SizeOfData;
+    uint32_t AddressOfRawData;
+    uint32_t PointerToRawData;
+};
+
+struct FpoData {
+    uint32_t OffStart;
+    uint32_t ProcSize;
+    uint32_t Locals;
+    uint16_t Params;
+    uint16_t Prolog : 8;
+    uint16_t Regs : 3;
+    uint16_t HasSeh : 1;
+    uint16_t UseBP : 1;
+    uint16_t Reserved1 : 1;
+    uint16_t Frame : 2;
 };
 
 #pragma pack(pop)

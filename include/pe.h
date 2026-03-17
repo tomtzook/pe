@@ -5,6 +5,7 @@
 #include "export.h"
 #include "exception.h"
 #include "import.h"
+#include "debug.h"
 
 namespace pe {
 
@@ -18,6 +19,7 @@ public:
     [[nodiscard]] export_table load_export_table() const;
     [[nodiscard]] import_table load_import_table() const;
     [[nodiscard]] functions_table load_exception_table() const;
+    [[nodiscard]] debug_table load_debug_table() const;
 
 private:
     pe::headers m_headers;

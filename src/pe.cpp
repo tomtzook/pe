@@ -53,4 +53,16 @@ functions_table image::load_exception_table() const {
     return {directory, section};
 }
 
+debug_table image::load_debug_table() const {
+    const auto data_directory = m_headers.data_directory(IMAGE_DIRECTORY_ENTRY_DEBUG);
+    if (data_directory == nullptr || !m_sections.contains_rva(data_directory->VirtualAddress)) {
+        return debug_table{nullptr};
+    }
+
+    const auto section = m_sections[data_directory->VirtualAddress];
+    const auto directory = section.rva_to_pointer<ImageDebugDirectory>(data_directory->VirtualAddress);
+
+    return debug_table{directory};
+}
+
 }
