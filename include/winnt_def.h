@@ -443,14 +443,15 @@ enum UnwindCodeOpInfo {
     UWINFO_R15,
 };
 
-struct UnwindCode {
+union UnwindCode {
     struct {
-        uint8_t Offset;
-        uint8_t OpCode : 4;
-        uint8_t OpInfo : 4;
+        uint16_t Offset : 8;
+        uint16_t OpCode : 4;
+        uint16_t OpInfo : 4;
     } u;
     uint16_t FrameOffset;
 };
+static_assert(sizeof(UnwindCode) == 2, "sizeof(UnwindCode)");
 
 struct UnwindInfo {
     uint8_t Version : 3;

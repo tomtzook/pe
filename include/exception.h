@@ -26,7 +26,7 @@ public:
     [[nodiscard]] bool has_next() const;
     [[nodiscard]] unwind_info next() const;
 
-private:
+//private:
     const UnwindInfo* m_info;
 };
 

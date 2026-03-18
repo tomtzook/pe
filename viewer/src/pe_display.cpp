@@ -128,8 +128,25 @@ static const char* data_directory_type_str(const pe::DataDirectoryType type) {
     }
 }
 
-static const char* frame_register_str(const uint32_t frame_register) {
-    switch (static_cast<pe::UnwindCodeOpInfo>(frame_register)) {
+static const char* unwind_op_str(const pe::UnwindCodeOpCode code) {
+    switch (code) {
+        case pe::UWOP_PUSH_NONVOL: return "Push NonVol";
+        case pe::UWOP_ALLOC_LARGE: return "Alloc Large";
+        case pe::UWOP_ALLOC_SMALL: return "Alloc Small";
+        case pe::UWOP_SET_FPREG: return "Set FPREG";
+        case pe::UWOP_SAVE_NONVOL: return "Save NonVol";
+        case pe::UWOP_SAVE_NONVOL_FAR: return "Save NonVol Far";
+        case pe::UWOP_EPILOG: return "Epilog";
+        case pe::UWOP_SPARE_CODE: return "Spare Code";
+        case pe::UWOP_SAVE_XMM128: return "Save XMM128";
+        case pe::UWOP_SAVE_XMM128_FAR: return "Save XMM128 Far";
+        case pe::UWOP_PUSH_MACHFRAME: return "Push MachFrame";
+        default: return "";
+    }
+}
+
+static const char* unwind_info_str(const pe::UnwindCodeOpInfo info) {
+    switch (info) {
         case pe::UWINFO_RAX: return "rax";
         case pe::UWINFO_RCX: return "rcx";
         case pe::UWINFO_RDX: return "rdx";
@@ -557,8 +574,61 @@ tree_node pe_display::load_exceptions() const {
 
                 unwind_node.add_leaf_uint("Flags", unwind_info.flags());
                 unwind_node.add_leaf_uint("PrologSize", unwind_info.prolog_size());
-                unwind_node.add_leaf_str("FrameRegister", frame_register_str(unwind_info.frame_register()));
+                unwind_node.add_leaf_str("FrameRegister", unwind_info_str(static_cast<pe::UnwindCodeOpInfo>(unwind_info.frame_register())));
                 unwind_node.add_leaf_uint("FrameRegisterOffset", unwind_info.frame_register_offset() * 16);
+
+                tree_node codes_root("Codes");
+                int code_index = 0;
+                for (int i = 0; i < unwind_info.codes_count(); i++) {
+                    const auto code = unwind_info.code(i);
+                    const auto current_code_index = code_index++;
+
+                    tree_node code_node(std::format("{}", current_code_index));
+                    const auto opcode = static_cast<pe::UnwindCodeOpCode>(code->u.OpCode);
+                    switch (opcode) {;
+                        case pe::UWOP_ALLOC_LARGE: {
+                            size_t alloc_size;
+                            if (code->u.OpInfo == 0) {
+                                alloc_size = unwind_info.code(i + 1)->FrameOffset * 8;
+                                i += 1;
+                            } else {
+                                alloc_size = *reinterpret_cast<const unsigned int*>(unwind_info.code(i + 1));
+                                i += 2;
+                            }
+                            code_node.add_leaf_str("Code", unwind_op_str(opcode));
+                            code_node.add_leaf_uint("Offset", code->u.Offset);
+                            code_node.add_leaf_uint("Size", alloc_size);
+                            break;
+                        }
+                        case pe::UWOP_ALLOC_SMALL: {
+                            const auto alloc_size = (code->u.OpInfo * 8) + 8;
+                            code_node.add_leaf_str("Code", unwind_op_str(opcode));
+                            code_node.add_leaf_uint("Offset", code->u.Offset);
+                            code_node.add_leaf_uint("Size", alloc_size);
+                            break;
+                        }
+                        case pe::UWOP_PUSH_NONVOL:
+                        case pe::UWOP_SAVE_NONVOL:
+                        case pe::UWOP_SAVE_NONVOL_FAR:
+                        case pe::UWOP_SAVE_XMM128:
+                        case pe::UWOP_SAVE_XMM128_FAR:
+                            code_node.add_leaf_str("Code", unwind_op_str(opcode));
+                            code_node.add_leaf_str("Info", unwind_info_str(static_cast<pe::UnwindCodeOpInfo>(code->u.OpInfo)));
+                            code_node.add_leaf_uint("Offset", code->u.Offset);
+                            break;
+                        case pe::UWOP_EPILOG:
+                        case pe::UWOP_SPARE_CODE:
+                        case pe::UWOP_PUSH_MACHFRAME:
+                        case pe::UWOP_SET_FPREG:
+                            code_node.add_leaf_str("Code", unwind_op_str(opcode));
+                            code_node.add_leaf_uint("Offset", code->u.Offset);
+                            break;
+                    }
+
+                    codes_root.add_child(std::move(code_node));
+                }
+
+                unwind_node.add_child(std::move(codes_root));
                 entry_node.add_child(std::move(unwind_node));
 
                 unwind_info = unwind_info.next();

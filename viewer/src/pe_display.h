@@ -1,7 +1,7 @@
 #pragma once
 
 #include <optional>
-#include <functional>
+#include <memory>
 #include <vector>
 #include <pe.h>
 
