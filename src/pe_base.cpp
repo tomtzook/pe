@@ -34,8 +34,40 @@ const uint8_t* headers::base() const {
     return m_base;
 }
 
-size_t headers::size() const {
+uint32_t headers::image_base() const {
+    return m_nt_headers->OptionalHeader.ImageBase;
+}
+
+size_t headers::image_size() const {
     return m_nt_headers->OptionalHeader.SizeOfImage;
+}
+
+size_t headers::headers_size() const {
+    return m_nt_headers->OptionalHeader.SizeOfHeaders;
+}
+
+uint16_t headers::image_version_major() const {
+    return m_nt_headers->OptionalHeader.MajorImageVersion;
+}
+
+uint16_t headers::image_version_minor() const {
+    return m_nt_headers->OptionalHeader.MinorImageVersion;
+}
+
+uint16_t headers::subsystem_version_major() const {
+    return m_nt_headers->OptionalHeader.MajorSubsystemVersion;
+}
+
+uint16_t headers::subsystem_version_minor() const {
+    return m_nt_headers->OptionalHeader.MinorSubsystemVersion;
+}
+
+uint16_t headers::os_version_major() const {
+    return m_nt_headers->OptionalHeader.MajorOperatingSystemVersion;
+}
+
+uint16_t headers::os_version_minor() const {
+    return m_nt_headers->OptionalHeader.MinorOperatingSystemVersion;
 }
 
 MachineType headers::machineType() const {

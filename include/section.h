@@ -11,7 +11,7 @@
 namespace pe {
 
 struct section {
-    section(const headers& headers, const ImageSectionHeader* header);
+    section(const headers& headers, const ImageSectionHeader* header, memory_alignment alignment);
 
     [[nodiscard]] bool is_valid() const;
 
@@ -24,6 +24,8 @@ struct section {
     [[nodiscard]] SectionCharacteristics characteristics() const;
 
     [[nodiscard]] bool contains_rva(rva_t rva) const;
+    [[nodiscard]] size_t rva_to_memory_offset(rva_t rva) const;
+    [[nodiscard]] size_t rva_to_file_offset(rva_t rva) const;
     [[nodiscard]] size_t rva_to_offset(rva_t rva) const;
 
     template<typename T>
@@ -35,6 +37,7 @@ struct section {
 private:
     const headers& m_pe_headers;
     const ImageSectionHeader* m_header;
+    const memory_alignment m_alignment;
 };
 
 class section_list {
@@ -50,7 +53,7 @@ public:
 #endif
 
 
-        iterator(const headers& headers, const ImageSectionHeader* header);
+        iterator(const headers& headers, const ImageSectionHeader* header, memory_alignment alignment);
 
         iterator& operator++();
         iterator& operator--();
@@ -64,12 +67,15 @@ public:
     private:
         const headers& m_pe_headers;
         const ImageSectionHeader* m_header;
+        const memory_alignment m_alignment;
     };
 
-    explicit section_list(const headers& headers);
+    section_list(const headers& headers, memory_alignment alignment);
 
     [[nodiscard]] size_t count() const;
     [[nodiscard]] bool contains_rva(rva_t rva) const;
+    [[nodiscard]] size_t rva_to_memory_offset(rva_t rva) const;
+    [[nodiscard]] size_t rva_to_file_offset(rva_t rva) const;
     [[nodiscard]] size_t rva_to_offset(rva_t rva) const;
 
     template<typename T>
@@ -87,6 +93,7 @@ public:
 private:
     const headers& m_pe_headers;
     const ImageSectionHeader* m_headers;
+    const memory_alignment m_alignment;
 };
 
 }

@@ -11,7 +11,7 @@ namespace pe {
 
 class image {
 public:
-    explicit image(const void* buffer);
+    image(const void* buffer, memory_alignment alignment);
 
     [[nodiscard]] const headers& headers() const;
     [[nodiscard]] const section_list& sections() const;
@@ -24,6 +24,7 @@ public:
 private:
     pe::headers m_headers;
     const section_list m_sections;
+    const memory_alignment m_alignment;
 };
 
 }

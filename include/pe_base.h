@@ -9,7 +9,16 @@ struct headers {
 
     [[nodiscard]] bool is_valid() const;
     [[nodiscard]] const uint8_t* base() const;
-    [[nodiscard]] size_t size() const;
+
+    [[nodiscard]] uint32_t image_base() const;
+    [[nodiscard]] size_t image_size() const;
+    [[nodiscard]] size_t headers_size() const;
+    [[nodiscard]] uint16_t image_version_major() const;
+    [[nodiscard]] uint16_t image_version_minor() const;
+    [[nodiscard]] uint16_t subsystem_version_major() const;
+    [[nodiscard]] uint16_t subsystem_version_minor() const;
+    [[nodiscard]] uint16_t os_version_major() const;
+    [[nodiscard]] uint16_t os_version_minor() const;
 
     [[nodiscard]] MachineType machineType() const;
     [[nodiscard]] Characteristics characteristics() const;

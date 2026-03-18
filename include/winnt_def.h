@@ -506,4 +506,9 @@ struct FpoData {
 
 #pragma pack(pop)
 
+enum class memory_alignment {
+    file,
+    loaded
+};
+
 }

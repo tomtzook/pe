@@ -48,6 +48,63 @@ static std::string get_filename(const std::string& path) {
     return path.substr(last_dot_pos + 1);
 }
 
+static const char* subsystem_str(const pe::Subsystem subsystem) {
+    switch (subsystem) {
+        case pe::SUBSYSTEM_UNKNOWN: return "Unknown";
+        case pe::SUBSYSTEM_NATIVE: return "Native";
+        case pe::SUBSYSTEM_WINDOWS_GUI: return "WindowsGui";
+        case pe::SUBSYSTEM_WINDOWS_CUI: return "WindowsCui";
+        case pe::SUBSYSTEM_OS2_CUI: return "Os2Cui";
+        case pe::SUBSYSTEM_POSIX_CUI: return "PosixCui";
+        case pe::SUBSYSTEM_NATIVE_WINDOWS: return "NativeWindows";
+        case pe::SUBSYSTEM_WINDOWS_CE_GUI: return "WindowsCeGui";
+        case pe::SUBSYSTEM_EFI_APPLICATION: return "EfiApplication";
+        case pe::SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER: return "EfiBootServiceDriver";
+        case pe::SUBSYSTEM_EFI_RUNTIME_DRIVER: return "EfiRuntimeDriver";
+        case pe::SUBSYSTEM_EFI_ROM: return "EfiRom";
+        case pe::SUBSYSTEM_XBOX: return "Xbox";
+        case pe::SUBSYSTEM_WINDOWS_BOOT_APPLICATION: return "WindowsBootApplication";
+        default: return "";
+    }
+}
+
+static const char* machine_type_str(const pe::MachineType type) {
+    switch (type) {
+        case pe::machine_unknown: return "Unknown";
+        case pe::machine_i860: return "I860";
+        case pe::machine_i386: return "I386";
+        case pe::machine_r3000: return "R3000";
+        case pe::machine_r4000: return "R4000";
+        case pe::machine_r10000: return "R10000";
+        case pe::machine_wcemipsv2: return "WCEMIPSv2";
+        case pe::machine_alpha: return "Alpha";
+        case pe::machine_sh3: return "Sh3";
+        case pe::machine_sh3dsp: return "Sh3DSP";
+        case pe::machine_sh3e: return "Sh3e";
+        case pe::machine_sh4: return "Sh4";
+        case pe::machine_sh5: return "Sh5";
+        case pe::machine_arm: return "Arm";
+        case pe::machine_thumb: return "Thumb";
+        case pe::machine_armnt: return "ArmNT";
+        case pe::machine_am33: return "Am33";
+        case pe::machine_powerpc: return "PowerPC";
+        case pe::machine_powerpcfp: return "PowerPCFP";
+        case pe::machine_ia64: return "IA64";
+        case pe::machine_mips16: return "Mips16";
+        case pe::machine_alpha64: return "Alpha64";
+        case pe::machine_mipsfpu: return "MipsFPU";
+        case pe::machine_mipsfpu16: return "MipsFPU16";
+        case pe::machine_tricore: return "Tricore";
+        case pe::machine_cef: return "CEF";
+        case pe::machine_ebc: return "EBC";
+        case pe::machine_amd64: return "AMD64";
+        case pe::machine_m32r: return "M32r";
+        case pe::machine_cee: return "CEE";
+        case pe::machine_arm64: return "ARM64";
+        default: return "";
+    }
+}
+
 static const char* data_directory_type_str(const pe::DataDirectoryType type) {
     switch (type) {
         case pe::IMAGE_DIRECTORY_ENTRY_EXPORT: return "Export";
@@ -271,7 +328,7 @@ pe_display::pe_display(const std::string_view path)
     : m_path(path)
     , m_name(get_filename(m_path))
     , m_data(load_file(m_path))
-    , m_image(m_data.data())
+    , m_image(m_data.data(), pe::memory_alignment::file)
     , m_information_root(load_info_tree())
 {}
 
@@ -302,8 +359,25 @@ void pe_display::display() const {
 tree_node pe_display::load_info_tree() const {
     tree_node root(m_name);
 
+    const auto headers = m_image.headers();
+    root.add_leaf_uint("Base", headers.image_base());
+    root.add_leaf_uint("Size", headers.image_size());
+    root.add_leaf_uint("ImageVersionMajor", headers.image_version_major());
+    root.add_leaf_uint("ImageVersionMinor", headers.image_version_minor());
+    root.add_leaf_uint("SubsystemVersionMajor", headers.subsystem_version_major());
+    root.add_leaf_uint("SubsystemVersionMinor", headers.subsystem_version_minor());
+    root.add_leaf_uint("OSVersionMajor", headers.os_version_major());
+    root.add_leaf_uint("OSVersionMinor", headers.os_version_minor());
+    root.add_leaf_str("Subsystem", subsystem_str(headers.subsystem()));
+    root.add_leaf_str("MachineType", machine_type_str(headers.machineType()));
+    root.add_leaf_uint("SectionAlignment", headers.section_alignment());
+
+    if (headers.has_entry_point()) {
+        root.add_leaf_uint("EntryPoint", headers.entry_point_address());
+    }
+
     {
-        const auto characteristics = m_image.headers().characteristics();
+        const auto characteristics = headers.characteristics();
         tree_node node("Characteristics");
         node.add_leaf_bool("RelocsStripped", characteristics.bits.RelocsStripped);
         node.add_leaf_bool("ExecutableImage", characteristics.bits.ExecutableImage);
@@ -325,7 +399,7 @@ tree_node pe_display::load_info_tree() const {
     }
 
     {
-        const auto characteristics = m_image.headers().dllCharacteristics();
+        const auto characteristics = headers.dllCharacteristics();
         tree_node node("DllCharacteristics");
         node.add_leaf_bool("HighEntropyVa", characteristics.bits.HighEntropyVa);
         node.add_leaf_bool("DynamicBase", characteristics.bits.DynamicBase);

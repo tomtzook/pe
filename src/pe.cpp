@@ -4,9 +4,10 @@
 
 namespace pe {
 
-image::image(const void* buffer)
+image::image(const void* buffer, const memory_alignment alignment)
     : m_headers(buffer)
-    , m_sections(m_headers)
+    , m_sections(m_headers, alignment)
+    , m_alignment(alignment)
 {}
 
 const headers& image::headers() const {
@@ -20,7 +21,7 @@ const section_list& image::sections() const {
 export_table image::load_export_table() const {
     const auto data_directory = m_headers.data_directory(IMAGE_DIRECTORY_ENTRY_EXPORT);
     if (data_directory == nullptr || !m_sections.contains_rva(data_directory->VirtualAddress)) {
-        return {nullptr, {m_headers, nullptr}};
+        return {nullptr, {m_headers, nullptr, m_alignment}};
     }
 
     const auto section = m_sections[data_directory->VirtualAddress];
@@ -32,7 +33,7 @@ export_table image::load_export_table() const {
 import_table image::load_import_table() const {
     const auto data_directory = m_headers.data_directory(IMAGE_DIRECTORY_ENTRY_IMPORT);
     if (data_directory == nullptr || !m_sections.contains_rva(data_directory->VirtualAddress)) {
-        return {nullptr, {m_headers, nullptr}};
+        return {nullptr, {m_headers, nullptr, m_alignment}};
     }
 
     const auto section = m_sections[data_directory->VirtualAddress];
@@ -44,7 +45,7 @@ import_table image::load_import_table() const {
 functions_table image::load_exception_table() const {
     const auto data_directory = m_headers.data_directory(IMAGE_DIRECTORY_ENTRY_EXCEPTION);
     if (data_directory == nullptr || !m_sections.contains_rva(data_directory->VirtualAddress)) {
-        return {nullptr, {m_headers, nullptr}};
+        return {nullptr, {m_headers, nullptr, m_alignment}};
     }
 
     const auto section = m_sections[data_directory->VirtualAddress];
