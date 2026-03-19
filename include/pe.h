@@ -13,6 +13,10 @@ class image {
 public:
     image(const void* buffer, memory_alignment alignment);
 
+    [[nodiscard]] const uint8_t* base() const;
+    [[nodiscard]] const uint8_t* end() const;
+    [[nodiscard]] size_t size() const;
+
     [[nodiscard]] const headers& headers() const;
     [[nodiscard]] const section_list& sections() const;
 
@@ -20,6 +24,8 @@ public:
     [[nodiscard]] import_table load_import_table() const;
     [[nodiscard]] functions_table load_exception_table() const;
     [[nodiscard]] debug_table load_debug_table() const;
+
+    static bool is_image_base(const void* ptr);
 
 private:
     pe::headers m_headers;

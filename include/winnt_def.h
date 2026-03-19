@@ -139,40 +139,40 @@ struct ImageDataDirectory {
 #define IMAGE_NUMBEROF_DIRECTORY_ENTRIES 16
 
 enum DataDirectoryType {
-    IMAGE_DIRECTORY_ENTRY_EXPORT = 0,
-    IMAGE_DIRECTORY_ENTRY_IMPORT = 1,
-    IMAGE_DIRECTORY_ENTRY_RESOURCE = 2,
-    IMAGE_DIRECTORY_ENTRY_EXCEPTION = 3,
-    IMAGE_DIRECTORY_ENTRY_SECURITY = 4,
-    IMAGE_DIRECTORY_ENTRY_BASERELOC = 5,
-    IMAGE_DIRECTORY_ENTRY_DEBUG = 6,
-    IMAGE_DIRECTORY_ENTRY_COPYRIGHT = 7,
-    IMAGE_DIRECTORY_ENTRY_GLOBALPTR = 8,   /* (MIPS GP) */
-    IMAGE_DIRECTORY_ENTRY_TLS = 9,
-    IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG = 10,
-    IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT = 11,
-    IMAGE_DIRECTORY_ENTRY_IAT = 12,  /* Import Address Table */
-    IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT = 13,
-    IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR = 14,
+    image_directory_entry_export = 0,
+    image_directory_entry_import = 1,
+    image_directory_entry_resource = 2,
+    image_directory_entry_exception = 3,
+    image_directory_entry_security = 4,
+    image_directory_entry_basereloc = 5,
+    image_directory_entry_debug = 6,
+    image_directory_entry_copyright = 7,
+    image_directory_entry_globalptr = 8,   /* (MIPS GP) */
+    image_directory_entry_tls = 9,
+    image_directory_entry_load_config = 10,
+    image_directory_entry_bound_import = 11,
+    image_directory_entry_iat = 12,  /* Import Address Table */
+    image_directory_entry_delay_import = 13,
+    image_directory_entry_com_descriptor = 14,
 
-    IMAGE_DIRECTORY_MAX
+    image_directory_max
 };
 
 enum Subsystem {
-    SUBSYSTEM_UNKNOWN = 0,
-    SUBSYSTEM_NATIVE = 1,
-    SUBSYSTEM_WINDOWS_GUI = 2,	/* Windows GUI subsystem */
-    SUBSYSTEM_WINDOWS_CUI = 3,	/* Windows character subsystem */
-    SUBSYSTEM_OS2_CUI = 5,
-    SUBSYSTEM_POSIX_CUI = 7,
-    SUBSYSTEM_NATIVE_WINDOWS = 8,	/* native Win9x driver */
-    SUBSYSTEM_WINDOWS_CE_GUI = 9,	/* Windows CE subsystem */
-    SUBSYSTEM_EFI_APPLICATION = 10,
-    SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER = 11,
-    SUBSYSTEM_EFI_RUNTIME_DRIVER = 12,
-    SUBSYSTEM_EFI_ROM = 13,
-    SUBSYSTEM_XBOX = 14,
-    SUBSYSTEM_WINDOWS_BOOT_APPLICATION = 16,
+    subsystem_unknown = 0,
+    subsystem_native = 1,
+    subsystem_windows_gui = 2,	/* Windows GUI subsystem */
+    subsystem_windows_cui = 3,	/* Windows character subsystem */
+    subsystem_os2_cui = 5,
+    subsystem_posix_cui = 7,
+    subsystem_native_windows = 8,	/* native Win9x driver */
+    subsystem_windows_ce_gui = 9,	/* Windows CE subsystem */
+    subsystem_efi_application = 10,
+    subsystem_efi_boot_service_driver = 11,
+    subsystem_efi_runtime_driver = 12,
+    subsystem_efi_rom = 13,
+    subsystem_xbox = 14,
+    subsystem_windows_boot_application = 16,
 };
 
 union DllCharacteristics {
@@ -404,43 +404,43 @@ struct ImageRuntimeFunctionEntry {
 };
 
 enum UnwindInfoFlag {
-    UNW_FLAG_NHANDLER = 0,
-    UNW_FLAG_EHANDLER = 1,
-    UNW_FLAG_UHANDLER = 2,
-    UNW_FLAG_CHAININFO = 4
+    unw_flag_nhandler = 0,
+    unw_flag_ehandler = 1,
+    unw_flag_uhandler = 2,
+    unw_flag_chaininfo = 4
 };
 
 enum UnwindCodeOpCode {
-    UWOP_PUSH_NONVOL = 0,
-    UWOP_ALLOC_LARGE = 1,
-    UWOP_ALLOC_SMALL = 2,
-    UWOP_SET_FPREG = 3,
-    UWOP_SAVE_NONVOL = 4,
-    UWOP_SAVE_NONVOL_FAR = 5,
-    UWOP_EPILOG = 6,
-    UWOP_SPARE_CODE = 7,
-    UWOP_SAVE_XMM128 = 8,
-    UWOP_SAVE_XMM128_FAR = 9,
-    UWOP_PUSH_MACHFRAME = 10,
+    uwop_push_nonvol = 0,
+    uwop_alloc_large = 1,
+    uwop_alloc_small = 2,
+    uwop_set_fpreg = 3,
+    uwop_save_nonvol = 4,
+    uwop_save_nonvol_far = 5,
+    uwop_epilog = 6,
+    uwop_spare_code = 7,
+    uwop_save_xmm128 = 8,
+    uwop_save_xmm128_far = 9,
+    uwop_push_machframe = 10,
 };
 
 enum UnwindCodeOpInfo {
-    UWINFO_RAX = 0,
-    UWINFO_RCX,
-    UWINFO_RDX,
-    UWINFO_RBX,
-    UWINFO_RSP,
-    UWINFO_RBP,
-    UWINFO_RSI,
-    UWINFO_RDI,
-    UWINFO_R8,
-    UWINFO_R9,
-    UWINFO_R10,
-    UWINFO_R11,
-    UWINFO_R12,
-    UWINFO_R13,
-    UWINFO_R14,
-    UWINFO_R15,
+    uwinfo_rax = 0,
+    uwinfo_rcx,
+    uwinfo_rdx,
+    uwinfo_rbx,
+    uwinfo_rsp,
+    uwinfo_rbp,
+    uwinfo_rsi,
+    uwinfo_rdi,
+    uwinfo_r8,
+    uwinfo_r9,
+    uwinfo_r10,
+    uwinfo_r11,
+    uwinfo_r12,
+    uwinfo_r13,
+    uwinfo_r14,
+    uwinfo_r15,
 };
 
 union UnwindCode {
@@ -463,22 +463,22 @@ struct UnwindInfo {
 };
 
 enum DebugType {
-    IMAGE_DEBUG_TYPE_UNKNOWN = 0,
-    IMAGE_DEBUG_TYPE_COFF = 1,
-    IMAGE_DEBUG_TYPE_CODEVIEW = 2,
-    IMAGE_DEBUG_TYPE_FPO = 3,
-    IMAGE_DEBUG_TYPE_MISC = 4,
-    IMAGE_DEBUG_TYPE_EXCEPTION = 5,
-    IMAGE_DEBUG_TYPE_FIXUP = 6,
-    IMAGE_DEBUG_TYPE_OMAP_TO_SRC = 7,
-    IMAGE_DEBUG_TYPE_OMAP_FROM_SRC = 8,
-    IMAGE_DEBUG_TYPE_BORLAND = 9,
-    IMAGE_DEBUG_TYPE_RESERVED10 = 10,
-    IMAGE_DEBUG_TYPE_CLSID = 11,
-    IMAGE_DEBUG_TYPE_REPRO = 16,
-    IMAGE_DEBUG_TYPE_UNDEFINED1 = 17,
-    IMAGE_DEBUG_TYPE_UNDEFINED2 = 18,
-    IMAGE_DEBUG_TYPE_EX_DLLCHARACTERISTICS = 20,
+    image_debug_type_unknown = 0,
+    image_debug_type_coff = 1,
+    image_debug_type_codeview = 2,
+    image_debug_type_fpo = 3,
+    image_debug_type_misc = 4,
+    image_debug_type_exception = 5,
+    image_debug_type_fixup = 6,
+    image_debug_type_omap_to_src = 7,
+    image_debug_type_omap_from_src = 8,
+    image_debug_type_borland = 9,
+    image_debug_type_reserved10 = 10,
+    image_debug_type_clsid = 11,
+    image_debug_type_repro = 16,
+    image_debug_type_undefined1 = 17,
+    image_debug_type_undefined2 = 18,
+    image_debug_type_ex_dllcharacteristics = 20,
 };
 
 struct ImageDebugDirectory {
@@ -511,5 +511,124 @@ enum class memory_alignment {
     file,
     loaded
 };
+
+
+static const char* str_subsystem(const Subsystem subsystem) {
+    switch (subsystem) {
+        case subsystem_unknown: return "Unknown";
+        case subsystem_native: return "Native";
+        case subsystem_windows_gui: return "WindowsGui";
+        case subsystem_windows_cui: return "WindowsCui";
+        case subsystem_os2_cui: return "Os2Cui";
+        case subsystem_posix_cui: return "PosixCui";
+        case subsystem_native_windows: return "NativeWindows";
+        case subsystem_windows_ce_gui: return "WindowsCeGui";
+        case subsystem_efi_application: return "EfiApplication";
+        case subsystem_efi_boot_service_driver: return "EfiBootServiceDriver";
+        case subsystem_efi_runtime_driver: return "EfiRuntimeDriver";
+        case subsystem_efi_rom: return "EfiRom";
+        case subsystem_xbox: return "Xbox";
+        case subsystem_windows_boot_application: return "WindowsBootApplication";
+        default: return "";
+    }
+}
+
+static const char* str_machine_type(const MachineType type) {
+    switch (type) {
+        case machine_unknown: return "Unknown";
+        case machine_i860: return "I860";
+        case machine_i386: return "I386";
+        case machine_r3000: return "R3000";
+        case machine_r4000: return "R4000";
+        case machine_r10000: return "R10000";
+        case machine_wcemipsv2: return "WCEMIPSv2";
+        case machine_alpha: return "Alpha";
+        case machine_sh3: return "Sh3";
+        case machine_sh3dsp: return "Sh3DSP";
+        case machine_sh3e: return "Sh3e";
+        case machine_sh4: return "Sh4";
+        case machine_sh5: return "Sh5";
+        case machine_arm: return "Arm";
+        case machine_thumb: return "Thumb";
+        case machine_armnt: return "ArmNT";
+        case machine_am33: return "Am33";
+        case machine_powerpc: return "PowerPC";
+        case machine_powerpcfp: return "PowerPCFP";
+        case machine_ia64: return "IA64";
+        case machine_mips16: return "Mips16";
+        case machine_alpha64: return "Alpha64";
+        case machine_mipsfpu: return "MipsFPU";
+        case machine_mipsfpu16: return "MipsFPU16";
+        case machine_tricore: return "Tricore";
+        case machine_cef: return "CEF";
+        case machine_ebc: return "EBC";
+        case machine_amd64: return "AMD64";
+        case machine_m32r: return "M32r";
+        case machine_cee: return "CEE";
+        case machine_arm64: return "ARM64";
+        default: return "";
+    }
+}
+
+static const char* str_data_directory_type(const DataDirectoryType type) {
+    switch (type) {
+        case image_directory_entry_export: return "Export";
+        case image_directory_entry_import: return "Import";
+        case image_directory_entry_resource: return "Resource";
+        case image_directory_entry_exception: return "Exception";
+        case image_directory_entry_security: return "Security";
+        case image_directory_entry_basereloc: return "BaseReloc";
+        case image_directory_entry_debug: return "Debug";
+        case image_directory_entry_copyright: return "Copyright";
+        case image_directory_entry_globalptr: return "GlobalPtr";
+        case image_directory_entry_tls: return "Tls";
+        case image_directory_entry_load_config: return "LoadConfig";
+        case image_directory_entry_bound_import: return "BoundImport";
+        case image_directory_entry_iat: return "IAT";
+        case image_directory_entry_delay_import: return "DelayImport";
+        case image_directory_entry_com_descriptor: return "ComDescriptor";
+        case image_directory_max:
+        default: return "";
+    }
+}
+
+static const char* str_unwind_code_op_code(const UnwindCodeOpCode code) {
+    switch (code) {
+        case uwop_push_nonvol: return "Push NonVol";
+        case uwop_alloc_large: return "Alloc Large";
+        case uwop_alloc_small: return "Alloc Small";
+        case uwop_set_fpreg: return "Set FPREG";
+        case uwop_save_nonvol: return "Save NonVol";
+        case uwop_save_nonvol_far: return "Save NonVol Far";
+        case uwop_epilog: return "Epilog";
+        case uwop_spare_code: return "Spare Code";
+        case uwop_save_xmm128: return "Save XMM128";
+        case uwop_save_xmm128_far: return "Save XMM128 Far";
+        case uwop_push_machframe: return "Push MachFrame";
+        default: return "";
+    }
+}
+
+static const char* str_unwind_code_op_info_register(const UnwindCodeOpInfo info) {
+    switch (info) {
+        case uwinfo_rax: return "rax";
+        case uwinfo_rcx: return "rcx";
+        case uwinfo_rdx: return "rdx";
+        case uwinfo_rbx: return "rbx";
+        case uwinfo_rsp: return "rsp";
+        case uwinfo_rbp: return "rbp";
+        case uwinfo_rsi: return "rsi";
+        case uwinfo_rdi: return "rdi";
+        case uwinfo_r8: return "r8";
+        case uwinfo_r9: return "r9";
+        case uwinfo_r10: return "r10";
+        case uwinfo_r11: return "r11";
+        case uwinfo_r12: return "r12";
+        case uwinfo_r13: return "r13";
+        case uwinfo_r14: return "r14";
+        case uwinfo_r15: return "r15";
+        default: return "";
+    }
+}
 
 }

@@ -9,6 +9,60 @@
 
 namespace pe {
 
+class unwind_code {
+public:
+    explicit unwind_code(const UnwindCode* code);
+
+    [[nodiscard]] UnwindCodeOpCode code() const;
+    [[nodiscard]] uint16_t info_raw() const;
+    [[nodiscard]] bool info_contains_register() const;
+    [[nodiscard]] UnwindCodeOpInfo info_register() const;
+    [[nodiscard]] size_t offset() const;
+    [[nodiscard]] size_t allocation_size() const;
+
+private:
+    const UnwindCode* m_code;
+};
+
+class unwind_codes {
+public:
+    class iterator {
+    public:
+        using value_type = unwind_code;
+        using reference = unwind_code;
+        using pointer = unwind_code;
+
+#ifndef PE_NO_STD
+        using iterator_category = std::bidirectional_iterator_tag;
+#endif
+
+        explicit iterator(const UnwindCode* code);
+
+        iterator& operator++();
+        iterator& operator--();
+
+        reference operator*();
+        pointer operator->();
+
+        bool operator==(const iterator& rhs) const;
+        bool operator!=(const iterator& rhs) const;
+
+    private:
+        const UnwindCode* m_code;
+    };
+
+    unwind_codes(const UnwindCode* codes, size_t count);
+
+    [[nodiscard]] size_t count() const;
+
+    [[nodiscard]] iterator begin() const;
+    [[nodiscard]] iterator end() const;
+
+private:
+    const UnwindCode* m_codes;
+    const size_t m_count;
+};
+
 class unwind_info {
 public:
     explicit unwind_info(const UnwindInfo* info);
@@ -22,11 +76,12 @@ public:
 
     [[nodiscard]] size_t codes_count() const;
     [[nodiscard]] const UnwindCode* code(size_t index) const;
+    [[nodiscard]] unwind_codes codes() const;
 
     [[nodiscard]] bool has_next() const;
     [[nodiscard]] unwind_info next() const;
 
-//private:
+private:
     const UnwindInfo* m_info;
 };
 

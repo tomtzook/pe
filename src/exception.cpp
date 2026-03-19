@@ -3,6 +3,121 @@
 
 namespace pe {
 
+static size_t sizeof_code_entry(const UnwindCode* code) {
+    const auto opcode = static_cast<UnwindCodeOpCode>(code->u.OpCode);
+    switch (opcode) {
+        case uwop_alloc_large:
+            return code->u.OpInfo == 0 ? 2 : 3;
+        case uwop_alloc_small:
+        case uwop_push_nonvol:
+        case uwop_set_fpreg:
+        case uwop_save_nonvol:
+        case uwop_save_nonvol_far:
+        case uwop_epilog:
+        case uwop_spare_code:
+        case uwop_save_xmm128:
+        case uwop_save_xmm128_far:
+        case uwop_push_machframe:
+            return 1;
+        default:
+            return 0;
+    }
+}
+
+unwind_code::unwind_code(const UnwindCode* code)
+    : m_code(code)
+{}
+
+UnwindCodeOpCode unwind_code::code() const {
+    return static_cast<UnwindCodeOpCode>(m_code->u.OpCode);
+}
+
+uint16_t unwind_code::info_raw() const {
+    return m_code->u.OpInfo;
+}
+
+bool unwind_code::info_contains_register() const {
+    switch (code()) {
+        case uwop_push_nonvol:
+        case uwop_save_nonvol:
+        case uwop_save_nonvol_far:
+        case uwop_save_xmm128:
+        case uwop_save_xmm128_far:
+            return true;
+        default:
+            return false;
+    }
+}
+
+UnwindCodeOpInfo unwind_code::info_register() const {
+    return static_cast<UnwindCodeOpInfo>(m_code->u.OpInfo);
+}
+
+size_t unwind_code::offset() const {
+    return m_code->u.Offset;
+}
+
+size_t unwind_code::allocation_size() const {
+    switch (code()) {
+        case uwop_alloc_large:
+            if (m_code->u.OpInfo == 0) {
+                return m_code[1].FrameOffset * 8;
+            }
+            return *reinterpret_cast<const unsigned int*>(m_code + 1);
+        case uwop_alloc_small:
+            return (m_code->u.OpInfo * 8) + 8;
+        default:
+            return 0;
+    }
+}
+
+unwind_codes::iterator::iterator(const UnwindCode* code)
+    : m_code(code)
+{}
+
+unwind_codes::iterator& unwind_codes::iterator::operator++() {
+    m_code += sizeof_code_entry(m_code);
+    return *this;
+}
+
+unwind_codes::iterator& unwind_codes::iterator::operator--() {
+    m_code -= sizeof_code_entry(m_code);
+    return *this;
+}
+
+unwind_codes::iterator::reference unwind_codes::iterator::operator*() {
+    return unwind_code{m_code};
+}
+
+unwind_codes::iterator::pointer unwind_codes::iterator::operator->() {
+    return unwind_code{m_code};
+}
+
+bool unwind_codes::iterator::operator==(const iterator& rhs) const {
+    return m_code == rhs.m_code;
+}
+
+bool unwind_codes::iterator::operator!=(const iterator& rhs) const {
+    return m_code != rhs.m_code;
+}
+
+unwind_codes::unwind_codes(const UnwindCode* codes, const size_t count)
+    : m_codes(codes)
+    , m_count(count)
+{}
+
+size_t unwind_codes::count() const {
+    return m_count;
+}
+
+unwind_codes::iterator unwind_codes::begin() const {
+    return iterator{m_codes};
+}
+
+unwind_codes::iterator unwind_codes::end() const {
+    return iterator{m_codes + count()};
+}
+
 unwind_info::unwind_info(const UnwindInfo* info)
     : m_info(info)
 {}
@@ -40,8 +155,13 @@ const UnwindCode* unwind_info::code(const size_t index) const {
     return &reinterpret_cast<const UnwindCode*>(start)[index];
 }
 
+unwind_codes unwind_info::codes() const {
+    const auto* start = reinterpret_cast<const UnwindCode*>(reinterpret_cast<const uint8_t*>(m_info) + sizeof(UnwindInfo));
+    return unwind_codes{start, m_info->CountOfCodes};
+}
+
 bool unwind_info::has_next() const {
-    return has_flag(UNW_FLAG_CHAININFO);
+    return has_flag(unw_flag_chaininfo);
 }
 
 unwind_info unwind_info::next() const {

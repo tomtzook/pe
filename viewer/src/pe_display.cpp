@@ -48,125 +48,6 @@ static std::string get_filename(const std::string& path) {
     return path.substr(last_dot_pos + 1);
 }
 
-static const char* subsystem_str(const pe::Subsystem subsystem) {
-    switch (subsystem) {
-        case pe::SUBSYSTEM_UNKNOWN: return "Unknown";
-        case pe::SUBSYSTEM_NATIVE: return "Native";
-        case pe::SUBSYSTEM_WINDOWS_GUI: return "WindowsGui";
-        case pe::SUBSYSTEM_WINDOWS_CUI: return "WindowsCui";
-        case pe::SUBSYSTEM_OS2_CUI: return "Os2Cui";
-        case pe::SUBSYSTEM_POSIX_CUI: return "PosixCui";
-        case pe::SUBSYSTEM_NATIVE_WINDOWS: return "NativeWindows";
-        case pe::SUBSYSTEM_WINDOWS_CE_GUI: return "WindowsCeGui";
-        case pe::SUBSYSTEM_EFI_APPLICATION: return "EfiApplication";
-        case pe::SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER: return "EfiBootServiceDriver";
-        case pe::SUBSYSTEM_EFI_RUNTIME_DRIVER: return "EfiRuntimeDriver";
-        case pe::SUBSYSTEM_EFI_ROM: return "EfiRom";
-        case pe::SUBSYSTEM_XBOX: return "Xbox";
-        case pe::SUBSYSTEM_WINDOWS_BOOT_APPLICATION: return "WindowsBootApplication";
-        default: return "";
-    }
-}
-
-static const char* machine_type_str(const pe::MachineType type) {
-    switch (type) {
-        case pe::machine_unknown: return "Unknown";
-        case pe::machine_i860: return "I860";
-        case pe::machine_i386: return "I386";
-        case pe::machine_r3000: return "R3000";
-        case pe::machine_r4000: return "R4000";
-        case pe::machine_r10000: return "R10000";
-        case pe::machine_wcemipsv2: return "WCEMIPSv2";
-        case pe::machine_alpha: return "Alpha";
-        case pe::machine_sh3: return "Sh3";
-        case pe::machine_sh3dsp: return "Sh3DSP";
-        case pe::machine_sh3e: return "Sh3e";
-        case pe::machine_sh4: return "Sh4";
-        case pe::machine_sh5: return "Sh5";
-        case pe::machine_arm: return "Arm";
-        case pe::machine_thumb: return "Thumb";
-        case pe::machine_armnt: return "ArmNT";
-        case pe::machine_am33: return "Am33";
-        case pe::machine_powerpc: return "PowerPC";
-        case pe::machine_powerpcfp: return "PowerPCFP";
-        case pe::machine_ia64: return "IA64";
-        case pe::machine_mips16: return "Mips16";
-        case pe::machine_alpha64: return "Alpha64";
-        case pe::machine_mipsfpu: return "MipsFPU";
-        case pe::machine_mipsfpu16: return "MipsFPU16";
-        case pe::machine_tricore: return "Tricore";
-        case pe::machine_cef: return "CEF";
-        case pe::machine_ebc: return "EBC";
-        case pe::machine_amd64: return "AMD64";
-        case pe::machine_m32r: return "M32r";
-        case pe::machine_cee: return "CEE";
-        case pe::machine_arm64: return "ARM64";
-        default: return "";
-    }
-}
-
-static const char* data_directory_type_str(const pe::DataDirectoryType type) {
-    switch (type) {
-        case pe::IMAGE_DIRECTORY_ENTRY_EXPORT: return "Export";
-        case pe::IMAGE_DIRECTORY_ENTRY_IMPORT: return "Import";
-        case pe::IMAGE_DIRECTORY_ENTRY_RESOURCE: return "Resource";
-        case pe::IMAGE_DIRECTORY_ENTRY_EXCEPTION: return "Exception";
-        case pe::IMAGE_DIRECTORY_ENTRY_SECURITY: return "Security";
-        case pe::IMAGE_DIRECTORY_ENTRY_BASERELOC: return "BaseReloc";
-        case pe::IMAGE_DIRECTORY_ENTRY_DEBUG: return "Debug";
-        case pe::IMAGE_DIRECTORY_ENTRY_COPYRIGHT: return "Copyright";
-        case pe::IMAGE_DIRECTORY_ENTRY_GLOBALPTR: return "GlobalPtr";
-        case pe::IMAGE_DIRECTORY_ENTRY_TLS: return "Tls";
-        case pe::IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG: return "LoadConfig";
-        case pe::IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT: return "BoundImport";
-        case pe::IMAGE_DIRECTORY_ENTRY_IAT: return "IAT";
-        case pe::IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT: return "DelayImport";
-        case pe::IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR: return "ComDescriptor";
-        case pe::IMAGE_DIRECTORY_MAX:
-        default:
-            return "";
-    }
-}
-
-static const char* unwind_op_str(const pe::UnwindCodeOpCode code) {
-    switch (code) {
-        case pe::UWOP_PUSH_NONVOL: return "Push NonVol";
-        case pe::UWOP_ALLOC_LARGE: return "Alloc Large";
-        case pe::UWOP_ALLOC_SMALL: return "Alloc Small";
-        case pe::UWOP_SET_FPREG: return "Set FPREG";
-        case pe::UWOP_SAVE_NONVOL: return "Save NonVol";
-        case pe::UWOP_SAVE_NONVOL_FAR: return "Save NonVol Far";
-        case pe::UWOP_EPILOG: return "Epilog";
-        case pe::UWOP_SPARE_CODE: return "Spare Code";
-        case pe::UWOP_SAVE_XMM128: return "Save XMM128";
-        case pe::UWOP_SAVE_XMM128_FAR: return "Save XMM128 Far";
-        case pe::UWOP_PUSH_MACHFRAME: return "Push MachFrame";
-        default: return "";
-    }
-}
-
-static const char* unwind_info_str(const pe::UnwindCodeOpInfo info) {
-    switch (info) {
-        case pe::UWINFO_RAX: return "rax";
-        case pe::UWINFO_RCX: return "rcx";
-        case pe::UWINFO_RDX: return "rdx";
-        case pe::UWINFO_RBX: return "rbx";
-        case pe::UWINFO_RSP: return "rsp";
-        case pe::UWINFO_RBP: return "rbp";
-        case pe::UWINFO_RSI: return "rsi";
-        case pe::UWINFO_RDI: return "rdi";
-        case pe::UWINFO_R8: return "r8";
-        case pe::UWINFO_R9: return "r9";
-        case pe::UWINFO_R10: return "r10";
-        case pe::UWINFO_R11: return "r11";
-        case pe::UWINFO_R12: return "r12";
-        case pe::UWINFO_R13: return "r13";
-        case pe::UWINFO_R14: return "r14";
-        case pe::UWINFO_R15: return "r15";
-        default: return "";
-    }
-}
-
 tree_leaf::tree_leaf(const std::string_view name)
     : m_name(name)
     , m_value_type(type::empty)
@@ -385,8 +266,8 @@ tree_node pe_display::load_info_tree() const {
     root.add_leaf_uint("SubsystemVersionMinor", headers.subsystem_version_minor());
     root.add_leaf_uint("OSVersionMajor", headers.os_version_major());
     root.add_leaf_uint("OSVersionMinor", headers.os_version_minor());
-    root.add_leaf_str("Subsystem", subsystem_str(headers.subsystem()));
-    root.add_leaf_str("MachineType", machine_type_str(headers.machineType()));
+    root.add_leaf_str("Subsystem", pe::str_subsystem(headers.subsystem()));
+    root.add_leaf_str("MachineType", pe::str_machine_type(headers.machineType()));
     root.add_leaf_uint("SectionAlignment", headers.section_alignment());
 
     if (headers.has_entry_point()) {
@@ -485,10 +366,10 @@ tree_node pe_display::load_sections() const {
 tree_node pe_display::load_data_directories() const {
     tree_node root("DataDirectories");
 
-    for (auto type = pe::DataDirectoryType::IMAGE_DIRECTORY_ENTRY_EXPORT;
-        type < pe::DataDirectoryType::IMAGE_DIRECTORY_MAX;
+    for (auto type = pe::DataDirectoryType::image_directory_entry_export;
+        type < pe::DataDirectoryType::image_directory_max;
         type = static_cast<pe::DataDirectoryType>(static_cast<uint32_t>(type) + 1)) {
-        tree_node node(data_directory_type_str(type));
+        tree_node node(pe::str_data_directory_type(type));
 
         const auto directory = m_image.headers().data_directory(type);
         if (directory == nullptr) {
@@ -574,54 +455,28 @@ tree_node pe_display::load_exceptions() const {
 
                 unwind_node.add_leaf_uint("Flags", unwind_info.flags());
                 unwind_node.add_leaf_uint("PrologSize", unwind_info.prolog_size());
-                unwind_node.add_leaf_str("FrameRegister", unwind_info_str(static_cast<pe::UnwindCodeOpInfo>(unwind_info.frame_register())));
+                unwind_node.add_leaf_str("FrameRegister", pe::str_unwind_code_op_info_register(static_cast<pe::UnwindCodeOpInfo>(unwind_info.frame_register())));
                 unwind_node.add_leaf_uint("FrameRegisterOffset", unwind_info.frame_register_offset() * 16);
 
                 tree_node codes_root("Codes");
                 int code_index = 0;
-                for (int i = 0; i < unwind_info.codes_count(); i++) {
-                    const auto code = unwind_info.code(i);
+                for (const auto& code : unwind_info.codes()) {
                     const auto current_code_index = code_index++;
-
                     tree_node code_node(std::format("{}", current_code_index));
-                    const auto opcode = static_cast<pe::UnwindCodeOpCode>(code->u.OpCode);
-                    switch (opcode) {;
-                        case pe::UWOP_ALLOC_LARGE: {
-                            size_t alloc_size;
-                            if (code->u.OpInfo == 0) {
-                                alloc_size = unwind_info.code(i + 1)->FrameOffset * 8;
-                                i += 1;
-                            } else {
-                                alloc_size = *reinterpret_cast<const unsigned int*>(unwind_info.code(i + 1));
-                                i += 2;
+
+                    switch (code.code()) {
+                        case pe::uwop_alloc_large:
+                        case pe::uwop_alloc_small:
+                            code_node.add_leaf_uint("Offset", code.offset());
+                            code_node.add_leaf_str("Code", pe::str_unwind_code_op_code(code.code()));
+                            code_node.add_leaf_uint("Size", code.allocation_size());
+                            break;
+                        default:
+                            code_node.add_leaf_uint("Offset", code.offset());
+                            code_node.add_leaf_str("Code", pe::str_unwind_code_op_code(code.code()));
+                            if (code.info_contains_register()) {
+                                code_node.add_leaf_str("Register", pe::str_unwind_code_op_info_register(code.info_register()));
                             }
-                            code_node.add_leaf_str("Code", unwind_op_str(opcode));
-                            code_node.add_leaf_uint("Offset", code->u.Offset);
-                            code_node.add_leaf_uint("Size", alloc_size);
-                            break;
-                        }
-                        case pe::UWOP_ALLOC_SMALL: {
-                            const auto alloc_size = (code->u.OpInfo * 8) + 8;
-                            code_node.add_leaf_str("Code", unwind_op_str(opcode));
-                            code_node.add_leaf_uint("Offset", code->u.Offset);
-                            code_node.add_leaf_uint("Size", alloc_size);
-                            break;
-                        }
-                        case pe::UWOP_PUSH_NONVOL:
-                        case pe::UWOP_SAVE_NONVOL:
-                        case pe::UWOP_SAVE_NONVOL_FAR:
-                        case pe::UWOP_SAVE_XMM128:
-                        case pe::UWOP_SAVE_XMM128_FAR:
-                            code_node.add_leaf_str("Code", unwind_op_str(opcode));
-                            code_node.add_leaf_str("Info", unwind_info_str(static_cast<pe::UnwindCodeOpInfo>(code->u.OpInfo)));
-                            code_node.add_leaf_uint("Offset", code->u.Offset);
-                            break;
-                        case pe::UWOP_EPILOG:
-                        case pe::UWOP_SPARE_CODE:
-                        case pe::UWOP_PUSH_MACHFRAME:
-                        case pe::UWOP_SET_FPREG:
-                            code_node.add_leaf_str("Code", unwind_op_str(opcode));
-                            code_node.add_leaf_uint("Offset", code->u.Offset);
                             break;
                     }
 
