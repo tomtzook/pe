@@ -91,7 +91,7 @@ public:
     [[nodiscard]] iterator end() const;
 
 private:
-    const headers& m_pe_headers;
+    const headers m_pe_headers;
     const ImageSectionHeader* m_headers;
     const memory_alignment m_alignment;
 };
