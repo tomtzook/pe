@@ -40,6 +40,13 @@ using export_ordinal_t = uint16_t;
 
 #pragma pack(push, 1)
 
+struct Guid {
+    uint32_t Data1;
+    uint16_t Data2;
+    uint16_t Data3;
+    uint8_t Data4[8];
+};
+
 struct ImageDosHeader {  // DOS .EXE header
     uint16_t e_magic;         // Magic number
     uint16_t e_cblp;          // uint8_ts on last page of file
@@ -505,6 +512,13 @@ struct FpoData {
     uint16_t Frame : 2;
 };
 
+struct CvInfoPdb70 {
+    uint32_t CvSignature;
+    Guid Signature;
+    uint32_t Age;
+    char PdbFileName[1];
+};
+
 #pragma pack(pop)
 
 enum class memory_alignment {
@@ -513,7 +527,7 @@ enum class memory_alignment {
 };
 
 
-static const char* str_subsystem(const Subsystem subsystem) {
+inline const char* str_subsystem(const Subsystem subsystem) {
     switch (subsystem) {
         case subsystem_unknown: return "Unknown";
         case subsystem_native: return "Native";
@@ -533,7 +547,7 @@ static const char* str_subsystem(const Subsystem subsystem) {
     }
 }
 
-static const char* str_machine_type(const MachineType type) {
+inline const char* str_machine_type(const MachineType type) {
     switch (type) {
         case machine_unknown: return "Unknown";
         case machine_i860: return "I860";
@@ -570,7 +584,7 @@ static const char* str_machine_type(const MachineType type) {
     }
 }
 
-static const char* str_data_directory_type(const DataDirectoryType type) {
+inline const char* str_data_directory_type(const DataDirectoryType type) {
     switch (type) {
         case image_directory_entry_export: return "Export";
         case image_directory_entry_import: return "Import";
@@ -592,7 +606,7 @@ static const char* str_data_directory_type(const DataDirectoryType type) {
     }
 }
 
-static const char* str_unwind_code_op_code(const UnwindCodeOpCode code) {
+inline const char* str_unwind_code_op_code(const UnwindCodeOpCode code) {
     switch (code) {
         case uwop_push_nonvol: return "Push NonVol";
         case uwop_alloc_large: return "Alloc Large";
@@ -609,7 +623,7 @@ static const char* str_unwind_code_op_code(const UnwindCodeOpCode code) {
     }
 }
 
-static const char* str_unwind_code_op_info_register(const UnwindCodeOpInfo info) {
+inline const char* str_unwind_code_op_info_register(const UnwindCodeOpInfo info) {
     switch (info) {
         case uwinfo_rax: return "rax";
         case uwinfo_rcx: return "rcx";
