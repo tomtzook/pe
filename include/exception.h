@@ -110,7 +110,7 @@ public:
         using iterator_category = std::bidirectional_iterator_tag;
 #endif
 
-        iterator(const ImageRuntimeFunctionEntry* function_entry, const section& section);
+        explicit iterator(const ImageRuntimeFunctionEntry* function_entry);
 
         iterator& operator++();
         iterator& operator--();
@@ -123,10 +123,9 @@ public:
 
     private:
         const ImageRuntimeFunctionEntry* m_function_entry;
-        const section& m_section;
     };
 
-    functions_table(const ImageRuntimeFunctionEntry* function_entries, section section);
+    explicit functions_table(const ImageRuntimeFunctionEntry* function_entries);
 
     [[nodiscard]] bool is_valid() const;
 
@@ -137,7 +136,6 @@ private:
     [[nodiscard]] size_t find_last_data_index() const;
 
     const ImageRuntimeFunctionEntry* m_function_entries;
-    section m_section;
 };
 
 }

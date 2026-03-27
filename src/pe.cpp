@@ -57,13 +57,13 @@ import_table image::load_import_table() const {
 functions_table image::load_exception_table() const {
     const auto data_directory = m_headers.data_directory(image_directory_entry_exception);
     if (data_directory == nullptr || !m_sections.contains_rva(data_directory->VirtualAddress)) {
-        return {nullptr, {m_headers, nullptr, m_alignment}};
+        return functions_table{nullptr};
     }
 
     const auto section = m_sections[data_directory->VirtualAddress];
     const auto directory = section.rva_to_pointer<ImageRuntimeFunctionEntry>(data_directory->VirtualAddress);
 
-    return {directory, section};
+    return functions_table{directory};
 }
 
 debug_table image::load_debug_table() const {

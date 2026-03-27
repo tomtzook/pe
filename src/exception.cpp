@@ -195,9 +195,8 @@ unwind_info function_entry::find_unwind_info(const section_list& sections) const
     return unwind_info(ptr);
 }
 
-functions_table::iterator::iterator(const ImageRuntimeFunctionEntry* function_entry, const section& section)
+functions_table::iterator::iterator(const ImageRuntimeFunctionEntry* function_entry)
     : m_function_entry(function_entry)
-    , m_section(section)
 {}
 
 functions_table::iterator& functions_table::iterator::operator++() {
@@ -226,9 +225,8 @@ bool functions_table::iterator::operator!=(const iterator& rhs) const {
     return m_function_entry != rhs.m_function_entry;
 }
 
-functions_table::functions_table(const ImageRuntimeFunctionEntry* function_entries, const section section)
+functions_table::functions_table(const ImageRuntimeFunctionEntry* function_entries)
     : m_function_entries(function_entries)
-    , m_section(section)
 {}
 
 bool functions_table::is_valid() const {
@@ -236,11 +234,11 @@ bool functions_table::is_valid() const {
 }
 
 functions_table::iterator functions_table::begin() const {
-    return {m_function_entries, m_section};
+    return iterator{m_function_entries};
 }
 
 functions_table::iterator functions_table::end() const {
-    return {m_function_entries + find_last_data_index(), m_section};
+    return iterator{m_function_entries + find_last_data_index()};
 }
 
 size_t functions_table::find_last_data_index() const {
